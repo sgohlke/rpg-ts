@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "types" : ["node", "jest"],
+        "lib": ["ES2020"],
+        "target": "ES2020",
+        "downlevelIteration": true,
+        "esModuleInterop": true
+    }
+}

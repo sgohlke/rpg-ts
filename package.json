@@ -1,0 +1,31 @@
+{
+  "name": "rpg-ts",
+  "version": "1.0.0",
+  "description": "role play game application",
+  "main": "index.ts",
+  "scripts": {
+    "lint": "tslint -c tslint.json 'src/**/*.ts'",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sgohlke/rpg-ts.git"
+  },
+  "keywords": [
+    "rpg"
+  ],
+  "author": "Stefan Gohlke",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sgohlke/rpg-ts/issues"
+  },
+  "homepage": "https://github.com/sgohlke/rpg-ts#readme",
+  "devDependencies": {
+    "@types/jest": "24.0.25",
+    "@types/node": "13.1.1",
+    "jest": "24.9.0",
+    "ts-jest": "24.2.0",
+    "tslint": "5.20.1",
+    "typescript": "3.7.4"
+  }
+}
