@@ -1,21 +1,26 @@
-import { Unit } from "../units/Unit";
-import { Player } from "./Player";
+import { Unit } from "../units/Unit"
+import { Player } from "./Player"
 
 export class Battle {
     private players: Map<string, Player> = new Map()
-    private units: Map<string, Unit> = new Map()
+    private unitPlayerAssignment: Map<string, string> = new Map()
 
     public joinBattle(player: Player): void {
         player.initBattle()
-        player.$units.forEach((value, key) => this.units.set(key, value));
+        player.$units.forEach((value, key) => this.getUnitPlayerAssignment().set(value.$id, player.$id))
         this.players.set(player.$id, player)
     }
 
     public attackUnit(attackerUnitId: string, defenderUnitId: string): void {
-        const attacker: Unit = this.units.get(attackerUnitId)
-        const defender: Unit = this.units.get(defenderUnitId)
-        defender.$ingameStatus.hp = defender.$ingameStatus.hp
-        - (attacker.$ingameStatus.atk - defender.$ingameStatus.def)
+        const attacker: Unit = this.getUnitFromPlayer(attackerUnitId)
+        const defender: Unit = this.getUnitFromPlayer(defenderUnitId)
+        defender.$ingameStatus.hp = this.calculateHpAfterDamage(attacker.$ingameStatus, defender.$ingameStatus)
+    }
+
+    public calculateHpAfterDamage(attackerIngameStatus: IStatus, defenderIngameStatus: IStatus): number {
+        const damage: number = defenderIngameStatus.def > attackerIngameStatus.atk ? 1
+        : attackerIngameStatus.atk - defenderIngameStatus.def
+        return damage > defenderIngameStatus.hp ? 0 : defenderIngameStatus.hp - damage
     }
 
     /**
@@ -23,14 +28,27 @@ export class Battle {
      * @return {Map<string, Player> }
      */
     public get $players(): Map<string, Player>  {
-        return this.players;
+        return this.players
     }
 
     /**
      * Getter $units
-     * @return {Map<String, Unit> }
+     * @return {Map<string, string> }
      */
-    public get $units(): Map<string, Unit>  {
-        return this.units;
+    public getUnitPlayerAssignment(): Map<string, string>  {
+        return this.unitPlayerAssignment
+    }
+
+    public getUnitFromPlayer(unitId: string): Unit {
+        if (this.getUnitPlayerAssignment().has(unitId) ) {
+            const playerId = this.getUnitPlayerAssignment().get(unitId)
+            if (this.players.has(playerId)) {
+                if (this.players.has(playerId) && this.players.get(playerId).$units.has(unitId)) {
+                    return this.players.get(playerId).$units.get(unitId)
+                }
+            }
+            throw new Error(`Unit ${unitId} not found in unit list of player ${playerId}`)
+        }
+        throw new Error(`Unit ${unitId} not found in unit player assignment`)
     }
 }

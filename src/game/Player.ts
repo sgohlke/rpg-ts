@@ -15,7 +15,7 @@ export class Player {
         this.units.set(unit.$id, unit)
     }
 
-    public initBattle() {
+    public initBattle(): void {
         for (const unit of this.units.values()) {
             unit.initBattleStatus()
         }

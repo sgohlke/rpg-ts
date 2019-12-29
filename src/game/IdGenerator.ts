@@ -1,9 +1,9 @@
 export class IdGenerator {
     public static getInstance(): IdGenerator {
         if (!IdGenerator.instance) {
-            IdGenerator.instance = new IdGenerator();
+            IdGenerator.instance = new IdGenerator()
         }
-        return IdGenerator.instance;
+        return IdGenerator.instance
     }
     private static instance: IdGenerator
     private playerIdCounter: number = 1
@@ -16,10 +16,10 @@ export class IdGenerator {
     }
 
     public generatePlayerId(): string {
-        return "p" + this.playerIdCounter++;
+        return "p" + this.playerIdCounter++
     }
 
     public generateUnitId(): string {
-        return "u" + this.unitIdCounter++;
+        return "u" + this.unitIdCounter++
     }
 }

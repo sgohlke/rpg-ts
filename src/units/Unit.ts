@@ -12,7 +12,7 @@ export class Unit {
         this.defaultStatus = status
     }
 
-    public initBattleStatus() {
+    public initBattleStatus(): void {
         this.ingameStatus = this.defaultStatus
     }
 

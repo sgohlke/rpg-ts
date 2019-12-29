@@ -1,8 +1,8 @@
-import { IdGenerator } from "./IdGenerator";
+import { IdGenerator } from "./IdGenerator"
 
 beforeEach(() => {
-    IdGenerator.getInstance().resetCounters();
-});
+    IdGenerator.getInstance().resetCounters()
+})
 
 test("GeneratePlayerId creates the correct player ids", () => {
     expect(IdGenerator.getInstance().generatePlayerId()).toBe("p1")

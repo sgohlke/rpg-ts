@@ -1,14 +1,14 @@
-import { Unit } from "../units/Unit";
-import { IdGenerator } from "./IdGenerator";
+import { Unit } from "../units/Unit"
+import { IdGenerator } from "./IdGenerator"
 import { Player } from "./Player"
 
 beforeEach(() => {
-    IdGenerator.getInstance().resetCounters();
-});
+    IdGenerator.getInstance().resetCounters()
+})
 
 test("Player is correctly creaeted", () => {
-    const player: Player = new Player("TestPlayer")
-    expect(player.$name).toBe("TestPlayer")
+    const player: Player = new Player("Test Player")
+    expect(player.$name).toBe("Test Player")
     expect(player.$id).toBe("p1")
 })
 
@@ -20,8 +20,8 @@ test("Two players do have different player ids", () => {
 })
 
 test("Battle status is initiated correctly", () => {
-    const player: Player = new Player("TestPlayer")
-    player.addUnit(new Unit("TestUnit", undefined))
+    const player: Player = new Player("Test Player")
+    player.addUnit(new Unit("Test Unit", undefined))
     expect(player.$units.size).toBe(1)
-    expect(player.$units.get("u1").$name).toBe("TestUnit")
+    expect(player.$units.get("u1").$name).toBe("Test Unit")
 })
