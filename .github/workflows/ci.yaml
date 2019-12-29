@@ -1,5 +1,8 @@
 name: RPG
-on: [push]
+on: 
+  push:
+  schedule:
+    - cron:  '0 3 * * *'
 
 jobs:
   auditexample:
@@ -11,5 +14,7 @@ jobs:
         with:
           node-version: '10.x'
       - run: npm install
+      - run: npm audit
+      - run: npm outdated
       - run: npm test
       - run: npm run lint
