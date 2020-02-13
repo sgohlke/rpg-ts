@@ -22,7 +22,7 @@
   "homepage": "https://github.com/sgohlke/rpg-ts#readme",
   "devDependencies": {
     "@types/jest": "25.1.2",
-    "@types/node": "13.7.0",
+    "@types/node": "13.7.1",
     "bufferutil": "4.0.1",
     "canvas": "2.6.1",
     "jest": "25.1.0",
