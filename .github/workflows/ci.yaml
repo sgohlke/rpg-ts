@@ -15,7 +15,6 @@ jobs:
           node-version: '10.x'
       - run: npm ci
       - run: npm audit
-      - run: npm outdated 
-        continue-on-error: true
+      - run: npm run update-check
       - run: npm test
       - run: npm run lint
