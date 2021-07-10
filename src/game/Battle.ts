@@ -1,5 +1,5 @@
-import { Unit } from "../units/Unit"
-import { Player } from "./Player"
+import { Unit } from "../units/Unit.ts"
+import { Player } from "./Player.ts"
 
 export class Battle {
     private players: Map<string, Player> = new Map()
@@ -7,7 +7,7 @@ export class Battle {
 
     public joinBattle(player: Player): void {
         player.initBattle()
-        player.$units.forEach((value, key) => this.getUnitPlayerAssignment().set(value.$id, player.$id))
+        player.$units.forEach((value) => this.getUnitPlayerAssignment().set(value.$id, player.$id))
         this.players.set(player.$id, player)
     }
 
@@ -40,11 +40,15 @@ export class Battle {
     }
 
     public getUnitFromPlayer(unitId: string): Unit {
-        if (this.getUnitPlayerAssignment().has(unitId) ) {
+        if (unitId && this.getUnitPlayerAssignment().has(unitId) ) {
             const playerId = this.getUnitPlayerAssignment().get(unitId)
-            if (this.players.has(playerId)) {
-                if (this.players.has(playerId) && this.players.get(playerId).$units.has(unitId)) {
-                    return this.players.get(playerId).$units.get(unitId)
+            if (playerId && this.players.has(playerId)) {
+                const player = this.players.get(playerId)
+                if (player && player.$units && player.$units.has(unitId)) {
+                    const unit = player.$units.get(unitId)
+                    if (unit) {
+                        return unit;
+                    }
                 }
             }
             throw new Error(`Unit ${unitId} not found in unit list of player ${playerId}`)
