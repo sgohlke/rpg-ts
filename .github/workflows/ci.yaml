@@ -1,8 +1,6 @@
 name: RPG
 on: 
   push:
-  schedule:
-    - cron:  '0 3 * * *'
 
 jobs:
   rpgts:
