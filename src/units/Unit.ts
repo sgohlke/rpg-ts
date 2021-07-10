@@ -1,4 +1,6 @@
-import { IdGenerator } from "../game/IdGenerator"
+import { IdGenerator } from "../game/IdGenerator.ts"
+import { IStatus } from "./Status.ts"
+
 
 export class Unit {
     private id: string

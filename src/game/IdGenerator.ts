@@ -6,8 +6,8 @@ export class IdGenerator {
         return IdGenerator.instance
     }
     private static instance: IdGenerator
-    private playerIdCounter: number = 1
-    private unitIdCounter: number = 1
+    private playerIdCounter = 1
+    private unitIdCounter = 1
     private constructor() {}
 
     public resetCounters(): void {

@@ -1,5 +1,5 @@
-import { Unit } from "../units/Unit"
-import { IdGenerator } from "./IdGenerator"
+import { Unit } from "../units/Unit.ts"
+import { IdGenerator } from "./IdGenerator.ts"
 
 export class Player {
     private id: string

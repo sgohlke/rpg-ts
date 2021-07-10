@@ -5,16 +5,13 @@ on:
     - cron:  '0 3 * * *'
 
 jobs:
-  auditexample:
+  rpgts:
     name: Install
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: denoland/setup-deno@v1
         with:
-          node-version: '10.x'
-      - run: npm ci
-      - run: npm audit --production
-      - run: npm run update-check
-      - run: npm test
-      - run: npm run lint
+          deno-version: 'v1.1.15'
+      - run: deno lint --unstable
+      - run: deno test
