@@ -10,4 +10,4 @@ This application needs a Deno version with Typescript 4.3 or higher. (i.e. Deno 
 Only tests are currently running. Run **deno test** to execute.
 
 ## Lint
-Run **deno lint --unstable** to execute.
+Run **deno lint** to execute.
