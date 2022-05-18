@@ -1,18 +1,23 @@
-import { Battle, Game, PlayerWithUnits } from "../index.ts";
+import { Battle, BattleStatus, Game, GamePlayer } from "../index.ts";
 
-export class PlayerAgainstAiGame implements Game {
+export class PlayerAgainstAIGame implements Game {
     private nextPlayerId = 1
-    private players: Array<PlayerWithUnits> = []
+    private players: Array<GamePlayer> = []
     private battles: Array<Battle> = []
 
-    createPlayer(player: PlayerWithUnits): string {
+    createPlayer(player: GamePlayer): string {
         const newPlayerId = "p" + this.nextPlayerId
-        this.players.push({ playerId: newPlayerId, name: player.name, units: player.units })
-        this.nextPlayerId = this.nextPlayerId + 1
-        return newPlayerId
+        if (player) {
+            player.playerId = newPlayerId
+            this.players.push(player)
+            this.nextPlayerId++
+            return newPlayerId
+        }
+        //TODO: Add error handling
+        return ""
     }
 
-    getPlayer(playerId: string): PlayerWithUnits | undefined {
+    getPlayer(playerId: string): GamePlayer | undefined {
         return this.players.find(entry => entry.playerId === playerId)
     }
 
@@ -21,7 +26,7 @@ export class PlayerAgainstAiGame implements Game {
         const playerOne = this.getPlayer(playerOneId)
         const playerTwo = this.getPlayer(playerTwoId)
         if (playerOne && playerTwo) {
-            this.battles.push({ battleId, playerOne, playerTwo })
+            this.battles.push({ battleId, playerOne, playerTwo, battleStatus: BattleStatus.ACTIVE })
             return battleId
         } else {
             return undefined
@@ -31,6 +36,22 @@ export class PlayerAgainstAiGame implements Game {
 
     getBattle(battleId: string): Battle | undefined {
         return this.battles.find(entry => entry.battleId === battleId)
+    }
+
+    attack(battleId: string, attakerJoinNumber: number, defenderJoinNumber: number): Battle | undefined {
+        const battle = this.getBattle(battleId)
+        if (battle) {
+            const attackerUnit = battle.playerOne.getUnit(attakerJoinNumber)
+            const defenderUnit = battle.playerTwo.getUnit(defenderJoinNumber)
+            if (attackerUnit && defenderUnit) {
+                let damage = attackerUnit.defaultStatus.atk - defenderUnit.defaultStatus.def
+                if (damage < 1) {
+                    damage = 1
+                }
+                defenderUnit.defaultStatus.hp = defenderUnit.defaultStatus.hp - damage 
+            }
+        }
+        return battle
     }
 
     private createBattleId(playerOneId: string, playerTwoId: string): string {

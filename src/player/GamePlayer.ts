@@ -1,15 +1,15 @@
-import { Player, PlayerWithUnits, Unit } from "../index.ts"
+import { PlayerWithUnits, Unit } from "../index.ts"
 
 export class GamePlayer implements PlayerWithUnits {
     playerId: string
     name: string
     nextJoinNumber = 1
-    units: Array<Unit>
+    units: Array<Unit> = []
 
-    constructor(player: Player) {
+    constructor(player: PlayerWithUnits) {
         this.playerId = player.playerId
         this.name = player.name
-        this.units = []
+        this.units = player.units || []
     }
 
     addUnit(unit: Unit): number {
