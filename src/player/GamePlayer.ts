@@ -20,6 +20,6 @@ export class GamePlayer implements PlayerWithUnits {
     }
 
     getUnit(joinNumber: number): Unit | undefined {
-        return this.units.find(entry => entry.joinNumber = joinNumber)
+        return this.units.find(entry => entry.joinNumber === joinNumber)
     }
 }

@@ -30,7 +30,7 @@ export class PlayerAgainstAiGame implements Game {
     }
 
     getBattle(battleId: string): Battle | undefined {
-        return this.battles.find(entry => entry.battleId = battleId)
+        return this.battles.find(entry => entry.battleId === battleId)
     }
 
     private createBattleId(playerOneId: string, playerTwoId: string): string {
