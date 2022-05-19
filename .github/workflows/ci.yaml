@@ -18,4 +18,5 @@ jobs:
           key: deno-https/v1-${{ github.sha }}
           restore-keys: deno-https/v1-
       - run: deno lint
-      - run: deno test
+      - run: deno test --coverage=covresults
+      - run: deno coverage covresults

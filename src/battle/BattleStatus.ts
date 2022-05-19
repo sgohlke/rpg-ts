@@ -1,4 +1,4 @@
 export enum BattleStatus {
-  ACTIVE,
-  ENDED,
+   ACTIVE,
+   ENDED,
 }

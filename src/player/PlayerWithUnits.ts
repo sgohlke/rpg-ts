@@ -1,7 +1,7 @@
-import { Unit } from "../index.ts";
+import { Unit } from '../index.ts';
 
 export interface PlayerWithUnits {
-  playerId: string;
-  name: string;
-  units?: Array<Unit>;
+   playerId: string;
+   name: string;
+   units?: Array<Unit>;
 }

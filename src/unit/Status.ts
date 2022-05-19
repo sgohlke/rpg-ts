@@ -1,5 +1,5 @@
 export interface Status {
-  hp: number;
-  atk: number;
-  def: number;
+   hp: number;
+   atk: number;
+   def: number;
 }
