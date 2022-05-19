@@ -1,8 +1,8 @@
-import { BattleStatus, GamePlayer } from "../index.ts"
+import { BattleStatus, PlayerInBattle } from "../index.ts";
 
 export interface Battle {
-    battleId: string
-    playerOne: GamePlayer
-    playerTwo: GamePlayer
-    battleStatus: BattleStatus
+  battleId: string;
+  playerOne: PlayerInBattle;
+  playerTwo: PlayerInBattle;
+  battleStatus: BattleStatus;
 }
