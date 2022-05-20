@@ -1,6 +1,6 @@
 import { assertEquals, Unit } from '../index.ts';
 
-Deno.test('Unit is correctly creaeted', () => {
+Deno.test('Unit is correctly created', () => {
    const unit: Unit = {
       joinNumber: 1,
       name: 'Slime',

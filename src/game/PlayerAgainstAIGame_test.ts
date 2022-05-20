@@ -9,7 +9,7 @@ import {
 const unitOne = getDefaultUnit('1');
 const unitTwo = getDefaultUnit('2');
 
-Deno.test('Player is correctly creaeted and added to Player list', () => {
+Deno.test('Player is correctly created and added to Player list', () => {
    const game = new PlayerAgainstAIGame();
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'doesnotmatter',
@@ -27,7 +27,7 @@ Deno.test('Player is correctly creaeted and added to Player list', () => {
    assertEquals(newPlayer.units, [unitOne, unitTwo]);
 });
 
-Deno.test('Battle is correctly creaeted and added to Battle list', () => {
+Deno.test('Battle is correctly created and added to Battle list', () => {
    const game = new PlayerAgainstAIGame();
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'doesnotmatter',

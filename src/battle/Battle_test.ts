@@ -10,7 +10,7 @@ import {
 const unitOne = getDefaultUnit('1');
 const unitTwo = getDefaultUnit('2');
 
-Deno.test('Battle is correctly creaeted', () => {
+Deno.test('Battle is correctly created', () => {
    const playerOne: PlayerInBattle = new PlayerInBattle(
       new GamePlayer({
          playerId: 'p1',
