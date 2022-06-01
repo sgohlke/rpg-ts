@@ -8,6 +8,7 @@ import {
 
 const unitOne = getDefaultUnit('1');
 const unitTwo = getDefaultUnit('2');
+const unitDefender = getDefaultUnit('3');
 
 Deno.test('Player is correctly created and added to Player list', () => {
    const game = new PlayerAgainstAIGame();
@@ -58,6 +59,21 @@ Deno.test('Battle is correctly created and added to Battle list', () => {
    assertEquals(battle.playerTwo.name, 'AI Player');
 });
 
+Deno.test('Battle is not created and not added to Battle list if one player is not found in player list', () => {
+   const game = new PlayerAgainstAIGame();
+   const playerOne: GamePlayer = new GamePlayer({
+      playerId: 'doesnotmatter',
+      name: 'Test Player',
+      units: [unitOne, unitTwo],
+   });
+   
+   const newPlayerOneId = game.createPlayer(playerOne);
+   assertEquals(newPlayerOneId, 'p1');
+   const newPlayerTwoId = 'pdoesnotexist';
+   const battleId = game.createBattle(newPlayerOneId, newPlayerTwoId);
+   assertEquals(battleId, undefined);
+});
+
 Deno.test('Attack in battle is performed correctly', () => {
    // Given
    const game = new PlayerAgainstAIGame();
@@ -84,6 +100,46 @@ Deno.test('Attack in battle is performed correctly', () => {
 
    // When
    const battleAfterAttack = game.attack(battleId, 1, 1);
+
+   // Then
+   assert(battleAfterAttack);
+   const defendingUnitHPAfterAttack =
+      battleAfterAttack.playerTwo.unitsInBattle[0].inBattleStatus.hp;
+   assertEquals(defendingUnitHPAfterAttack, initialEnemyHP - 1);
+
+   // Assert that initial unit default hp did not change after attack in battle
+   const secondPlayer = game.getPlayer('p2');
+   assert(secondPlayer);
+   const defendingUnitDefaultHP = secondPlayer.units[0].defaultStatus.hp;
+   assertEquals(defendingUnitDefaultHP, playerTwo.units[0].defaultStatus.hp);
+});
+
+Deno.test('Attack in battle is performed correctly and deals at least 1 HP as damage', () => {
+   // Given
+   const game = new PlayerAgainstAIGame();
+   const playerOne: GamePlayer = new GamePlayer({
+      playerId: 'doesnotmatter',
+      name: 'Test Player',
+      units: [unitOne, unitTwo],
+   });
+   const playerTwo: GamePlayer = new GamePlayer({
+      playerId: 'doesnotmatter',
+      name: 'AI Player',
+      units: [unitDefender, unitTwo],
+   });
+
+   const newPlayerOneId = game.createPlayer(playerOne);
+   const newPlayerTwoId = game.createPlayer(playerTwo);
+   const battleId = game.createBattle(newPlayerOneId, newPlayerTwoId);
+   assert(battleId);
+
+   const battle = game.getBattle(battleId);
+   const initialEnemyHP = unitDefender.defaultStatus.hp;
+   assert(battle);
+   assertEquals(battle.playerTwo.units[0].defaultStatus.hp, initialEnemyHP);
+
+   // When
+   const battleAfterAttack = game.attack(battleId, 1, 3);
 
    // Then
    assert(battleAfterAttack);

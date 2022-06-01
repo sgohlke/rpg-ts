@@ -11,6 +11,11 @@ export const DEFAULT_UNITS = new Map<string, Unit>([
       name: 'Parent Slime',
       defaultStatus: { hp: 6, atk: 2, def: 1 },
    }],
+   ['3', {
+      joinNumber: 3,
+      name: 'LilDefender',
+      defaultStatus: { hp: 6, atk: 2, def: 3 },
+   }],
 ]);
 
 export function getDefaultUnit(unitId: string): Unit {

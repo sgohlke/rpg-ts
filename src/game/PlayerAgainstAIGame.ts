@@ -11,23 +11,19 @@ export class PlayerAgainstAIGame implements Game {
    private players: Array<GamePlayer> = [];
    private battles: Array<Battle> = [];
 
-   createPlayer(player: GamePlayer): string {
+   createPlayer(player: GamePlayer): string | undefined {
       const newPlayerId = 'p' + this.nextPlayerId;
-      if (player) {
-         player.playerId = newPlayerId;
-         this.players.push(player);
-         this.nextPlayerId++;
-         return newPlayerId;
-      }
-      //TODO: Add error handling
-      return '';
+      player.playerId = newPlayerId;
+      this.players.push(player);
+      this.nextPlayerId++;
+      return newPlayerId;
    }
 
-   getPlayer(playerId: string): GamePlayer | undefined {
+   getPlayer(playerId: string | undefined): GamePlayer | undefined {
       return this.players.find((entry) => entry.playerId === playerId);
    }
 
-   createBattle(playerOneId: string, playerTwoId: string): string | undefined {
+   createBattle(playerOneId: string | undefined, playerTwoId: string | undefined ): string | undefined {
       const battleId = this.createBattleId(playerOneId, playerTwoId);
       const playerOne = this.getPlayer(playerOneId);
       const playerTwo = this.getPlayer(playerTwoId);
@@ -74,7 +70,7 @@ export class PlayerAgainstAIGame implements Game {
       return battle;
    }
 
-   private createBattleId(playerOneId: string, playerTwoId: string): string {
+   private createBattleId(playerOneId: string| undefined , playerTwoId: string | undefined ): string {
       return playerOneId + '-' + playerTwoId + '_' + Date.now();
    }
 }
