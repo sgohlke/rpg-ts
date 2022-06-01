@@ -24,7 +24,6 @@ Deno.test('Unit is created and stored in in-memory database', () => {
    assertEquals(createdUnit.defaultStatus, testUnit.defaultStatus);
 });
 
-
 Deno.test('Broken unit is created and stored in in-memory database', () => {
    const testUnit = getDefaultUnit('148965325325');
    const unit: UnitWithPlayerId = {

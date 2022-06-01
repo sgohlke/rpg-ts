@@ -66,7 +66,7 @@ Deno.test('Battle is not created and not added to Battle list if one player is n
       name: 'Test Player',
       units: [unitOne, unitTwo],
    });
-   
+
    const newPlayerOneId = game.createPlayer(playerOne);
    assertEquals(newPlayerOneId, 'p1');
    const newPlayerTwoId = 'pdoesnotexist';
