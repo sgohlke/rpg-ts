@@ -4,6 +4,7 @@ import {
    Game,
    GamePlayer,
    PlayerInBattle,
+   UnitInBattle,
 } from '../index.ts';
 
 export class PlayerAgainstAIGame implements Game {
@@ -60,17 +61,55 @@ export class PlayerAgainstAIGame implements Game {
          const defenderUnit = battle.playerTwo.getUnitInBattle(
             defenderJoinNumber,
          );
+
+         if (attackerUnit && attackerUnit.inBattleStatus.hp === 0) {
+            throw new Error('Cannot attack with a unit with 0 HP');
+         }
+
+         if (defenderUnit && defenderUnit.inBattleStatus.hp === 0) {
+            throw new Error(
+               'Cannot attack a unit that has already been defeated',
+            );
+         }
+
          if (attackerUnit && defenderUnit) {
-            let damage = attackerUnit.inBattleStatus.atk -
-               defenderUnit.inBattleStatus.def;
-            if (damage < 1) {
-               damage = 1;
-            }
-            defenderUnit.inBattleStatus.hp = defenderUnit.inBattleStatus.hp -
-               damage;
+            defenderUnit.inBattleStatus.hp -= this.calculateDamage(
+               attackerUnit,
+               defenderUnit,
+            );
+         }
+         const winner = this.determineWinner(
+            battle.playerOne,
+            battle.playerTwo,
+         );
+         if (winner) {
+            battle.battleStatus = BattleStatus.ENDED;
+            battle.battleWinner = winner;
          }
       }
       return battle;
+   }
+
+   private calculateDamage(
+      attackerUnit: UnitInBattle,
+      defenderUnit: UnitInBattle,
+   ): number {
+      let damage = attackerUnit.inBattleStatus.atk -
+         defenderUnit.inBattleStatus.def;
+      if (damage < 1) {
+         damage = 1;
+      }
+      return damage;
+   }
+
+   private determineWinner(
+      playerOne: PlayerInBattle,
+      playerTwo: PlayerInBattle,
+   ): PlayerInBattle | undefined {
+      //TODO: Add test case for playerOne defeated after counter-attack has been added
+      return playerOne.isDefeated()
+         ? playerTwo
+         : (playerTwo.isDefeated() ? playerOne : undefined);
    }
 
    private createBattleId(

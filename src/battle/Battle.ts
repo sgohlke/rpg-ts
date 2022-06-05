@@ -5,4 +5,5 @@ export interface Battle {
    playerOne: PlayerInBattle;
    playerTwo: PlayerInBattle;
    battleStatus: BattleStatus;
+   battleWinner?: PlayerInBattle;
 }

@@ -27,4 +27,8 @@ export class PlayerInBattle extends GamePlayer {
          entry.joinNumber === joinNumber
       );
    }
+
+   isDefeated(): boolean {
+      return !this.unitsInBattle.some((entry) => entry.inBattleStatus.hp > 0);
+   }
 }
