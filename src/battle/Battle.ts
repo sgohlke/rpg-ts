@@ -1,4 +1,4 @@
-import { BattleStatus, PlayerInBattle } from '../index.ts';
+import { BattleStatus, CounterAttackUnits, PlayerInBattle } from '../index.ts';
 
 export interface Battle {
    battleId: string;
@@ -6,4 +6,5 @@ export interface Battle {
    playerTwo: PlayerInBattle;
    battleStatus: BattleStatus;
    battleWinner?: PlayerInBattle;
+   counterAttackUnits?: CounterAttackUnits;
 }

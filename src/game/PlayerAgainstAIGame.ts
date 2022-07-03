@@ -1,6 +1,8 @@
 import {
    Battle,
    BattleStatus,
+   CounterAttackStrategy,
+   CounterAttackUnits,
    Game,
    GamePlayer,
    PlayerInBattle,
@@ -27,6 +29,7 @@ export class PlayerAgainstAIGame implements Game {
    createBattle(
       playerOneId: string | undefined,
       playerTwoId: string | undefined,
+      playerTwoCounterAttackStrategy = CounterAttackStrategy.RANDOM_ATTACK,
    ): string | undefined {
       const battleId = this.createBattleId(playerOneId, playerTwoId);
       const playerOne = this.getPlayer(playerOneId);
@@ -35,7 +38,10 @@ export class PlayerAgainstAIGame implements Game {
          this.battles.push({
             battleId,
             playerOne: new PlayerInBattle(playerOne),
-            playerTwo: new PlayerInBattle(playerTwo),
+            playerTwo: new PlayerInBattle(
+               playerTwo,
+               playerTwoCounterAttackStrategy,
+            ),
             battleStatus: BattleStatus.ACTIVE,
          });
          return battleId;
@@ -46,6 +52,31 @@ export class PlayerAgainstAIGame implements Game {
 
    getBattle(battleId: string): Battle | undefined {
       return this.battles.find((entry) => entry.battleId === battleId);
+   }
+
+   determineCounterAttackUnits(
+      playerTwo: PlayerInBattle,
+      playerOne: PlayerInBattle,
+   ): CounterAttackUnits {
+      if (playerTwo.isDefeated() || playerOne.isDefeated()) {
+         return {
+            counterAttacker: undefined,
+            counterTarget: undefined,
+         };
+      }
+
+      switch (playerTwo.counterAttackStrategy) {
+         case CounterAttackStrategy.NO_COUNTER_ATTACK:
+            return {
+               counterAttacker: undefined,
+               counterTarget: undefined,
+            };
+         case CounterAttackStrategy.RANDOM_ATTACK:
+            return {
+               counterAttacker: playerTwo.findRandomNonDefeatedUnit(),
+               counterTarget: playerOne.findRandomNonDefeatedUnit(),
+            };
+      }
    }
 
    attack(
@@ -78,6 +109,22 @@ export class PlayerAgainstAIGame implements Game {
                defenderUnit,
             );
          }
+
+         const { counterAttacker, counterTarget } = this
+            .determineCounterAttackUnits(battle.playerTwo, battle.playerOne);
+         if (counterAttacker && counterTarget) {
+            counterTarget.inBattleStatus.hp -= this.calculateDamage(
+               counterAttacker,
+               counterTarget,
+            );
+            battle.counterAttackUnits = { counterAttacker, counterTarget };
+         } else {
+            battle.counterAttackUnits = {
+               counterAttacker: undefined,
+               counterTarget: undefined,
+            };
+         }
+
          const winner = this.determineWinner(
             battle.playerOne,
             battle.playerTwo,

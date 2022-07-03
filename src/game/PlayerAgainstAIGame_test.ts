@@ -4,6 +4,7 @@ import {
    assertThrows,
    Battle,
    BattleStatus,
+   CounterAttackStrategy,
    GamePlayer,
    getDefaultUnit,
    PlayerAgainstAIGame,
@@ -146,7 +147,7 @@ Deno.test('Battle has ended and proper winner is determined if Player defeats AI
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'p1',
       name: 'Test Player',
-      units: [unitOne],
+      units: [unitTwo],
    });
    const playerTwo: GamePlayer = new GamePlayer({
       playerId: 'p2',
@@ -157,7 +158,7 @@ Deno.test('Battle has ended and proper winner is determined if Player defeats AI
    const { battleId } = createBattle(game, playerOne, playerTwo);
 
    // When: Attack once to defeat punchbag
-   const battleAfterPunchbagDefeated = game.attack(battleId, 1, 4);
+   const battleAfterPunchbagDefeated = game.attack(battleId, 2, 4);
    assert(battleAfterPunchbagDefeated);
 
    // Then: punchbag has 0 hp, but player two is not yet defeated, battle is still active and no winner has been determined
@@ -169,13 +170,30 @@ Deno.test('Battle has ended and proper winner is determined if Player defeats AI
    assertEquals(battleAfterPunchbagDefeated.battleStatus, BattleStatus.ACTIVE);
    assertEquals(battleAfterPunchbagDefeated.battleWinner, undefined);
 
-   // When: Attack 5 times to defeat AI slime unit
-   let battleAfterSlimeDefeated;
-   for (let index = 0; index < 5; index++) {
-      battleAfterSlimeDefeated = game.attack(battleId, 1, 1);
+   // When: Attack enemy slime unit 4 times
+   let battleAfterSlimeDefeated: Battle | undefined =
+      battleAfterPunchbagDefeated;
+   for (let index = 0; index < 4; index++) {
+      const unitTwoCurrentHP =
+         battleAfterPunchbagDefeated.playerOne.getUnitInBattle(2)
+            ?.inBattleStatus.hp;
+      assert(unitTwoCurrentHP);
+      battleAfterSlimeDefeated = game.attack(battleId, 2, 1);
+      const counterAttackTarget = battleAfterSlimeDefeated?.counterAttackUnits
+         ?.counterTarget;
+      assert(counterAttackTarget);
+      assertEquals(counterAttackTarget.joinNumber, 2);
+      // Then: counter attack target should have one HP less than before
+      assertEquals(counterAttackTarget.inBattleStatus.hp, unitTwoCurrentHP - 1);
    }
-   assert(battleAfterSlimeDefeated);
 
+   // Attack final time to defeat slime. No counterattack should be triggered
+   battleAfterSlimeDefeated = game.attack(battleId, 2, 1);
+   const counterAttackTarget = battleAfterSlimeDefeated?.counterAttackUnits
+      ?.counterTarget;
+   assertEquals(counterAttackTarget, undefined);
+
+   assert(battleAfterSlimeDefeated);
    // Then: slime has 0 hp, player two is defeated and battle has ended
    const slimeAfterBattle = battleAfterSlimeDefeated.playerTwo.getUnitInBattle(
       1,
@@ -258,16 +276,77 @@ Deno.test('Player cannot attack unit with 0 HP', () => {
    );
 });
 
+Deno.test('Enemy player does not counterattack if NO_COUNTER_ATTACK strategy is used', () => {
+   // Given
+   const game = new PlayerAgainstAIGame();
+   const playerOne: GamePlayer = new GamePlayer({
+      playerId: 'p1',
+      name: 'Test Player',
+      units: [unitOne],
+   });
+   const playerTwo: GamePlayer = new GamePlayer({
+      playerId: 'p2',
+      name: 'AI Player',
+      units: [unitOne],
+   });
+
+   const { battleId } = createBattle(
+      game,
+      playerOne,
+      playerTwo,
+      CounterAttackStrategy.NO_COUNTER_ATTACK,
+   );
+
+   const battle = game.attack(battleId, 1, 1);
+   const counterAttackTarget = battle?.counterAttackUnits?.counterTarget;
+   assertEquals(counterAttackTarget, undefined);
+});
+
+Deno.test('Player looses battle against AI', () => {
+   // Given
+   const game = new PlayerAgainstAIGame();
+   const playerOne: GamePlayer = new GamePlayer({
+      playerId: 'p1',
+      name: 'Test Player',
+      units: [punchbagUnit],
+   });
+   const playerTwo: GamePlayer = new GamePlayer({
+      playerId: 'p2',
+      name: 'AI Player',
+      units: [unitOne],
+   });
+
+   const { battleId } = createBattle(
+      game,
+      playerOne,
+      playerTwo,
+   );
+
+   const battle = game.attack(battleId, 4, 1);
+   assert(battle);
+   assertEquals(battle.playerOne.isDefeated(), true);
+   assertEquals(battle.battleStatus, BattleStatus.ENDED);
+   assertEquals(
+      battle.battleWinner,
+      battle.playerTwo,
+   );
+});
+
 function createBattle(
    game: PlayerAgainstAIGame,
    playerOne: GamePlayer,
    playerTwo: GamePlayer,
+   playerTwoCounterAttackStrategy = CounterAttackStrategy.RANDOM_ATTACK,
 ): { battleId: string; battle: Battle } {
    const newPlayerOneId = game.createPlayer(playerOne);
    assertEquals(newPlayerOneId, 'p1');
    const newPlayerTwoId = game.createPlayer(playerTwo);
    assertEquals(newPlayerTwoId, 'p2');
-   const battleId = game.createBattle(newPlayerOneId, newPlayerTwoId);
+   const battleId = game.createBattle(
+      newPlayerOneId,
+      newPlayerTwoId,
+      playerTwoCounterAttackStrategy,
+   );
    assert(battleId);
 
    const battle = game.getBattle(battleId);

@@ -31,3 +31,14 @@ Deno.test('PlayerInBattle is correctly created', () => {
       } as InBattleStatus,
    );
 });
+
+Deno.test('findRandomNonDefeatedUnit returns undefined if no undefeated units are available', () => {
+   const unit = getDefaultUnit('5');
+   const player: GamePlayer = new GamePlayer({
+      playerId: 'p1',
+      name: 'Test Player',
+      units: [unit],
+   });
+   const playerInBattle = new PlayerInBattle(player);
+   assertEquals(playerInBattle.findRandomNonDefeatedUnit(), undefined);
+});
