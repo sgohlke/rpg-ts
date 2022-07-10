@@ -86,17 +86,27 @@ export class PlayerAgainstAIGame implements Game {
    ): Battle | undefined {
       const battle = this.getBattle(battleId);
       if (battle) {
-
-         if (battle.battleStatus === BattleStatus.ENDED ) {
+         if (battle.battleStatus === BattleStatus.ENDED) {
             throw new Error('Cannot attack in a battle that has already ended');
          }
 
          const attackerUnit = battle.playerOne.getUnitInBattle(
             attakerJoinNumber,
          );
+         if (!attackerUnit) {
+            throw new Error(
+               `Cannot attack, did not find attacker unit with join number ${attakerJoinNumber}`,
+            );
+         }
+
          const defenderUnit = battle.playerTwo.getUnitInBattle(
             defenderJoinNumber,
          );
+         if (!defenderUnit) {
+            throw new Error(
+               `Cannot attack, did not find defender unit with join number ${defenderJoinNumber}`,
+            );
+         }
 
          if (attackerUnit && attackerUnit.inBattleStatus.hp === 0) {
             throw new Error('Cannot attack with a unit with 0 HP');

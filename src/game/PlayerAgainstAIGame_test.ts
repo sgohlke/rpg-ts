@@ -326,7 +326,6 @@ Deno.test('Player looses battle against AI', () => {
    );
 });
 
-
 Deno.test('Cannot attack in battle that has already ended', () => {
    // Given
    const game = new PlayerAgainstAIGame();
@@ -356,15 +355,53 @@ Deno.test('Cannot attack in battle that has already ended', () => {
       battle.playerOne,
    );
 
-    // When/Then: Attack not possible if battle has ended, throws error
-    assertThrows(
+   // When/Then: Attack not possible if battle has ended, throws error
+   assertThrows(
       (): void => {
          game.attack(battleId, 1, 4);
       },
       Error,
       'Cannot attack in a battle that has already ended',
    );
+});
 
+Deno.test('Cannot attack if attacker or defender unit is not found', () => {
+   // Given
+   const game = new PlayerAgainstAIGame();
+   const playerOne: GamePlayer = new GamePlayer({
+      playerId: 'p1',
+      name: 'Test Player',
+      units: [slimeUnit],
+   });
+   const playerTwo: GamePlayer = new GamePlayer({
+      playerId: 'p2',
+      name: 'AI Player',
+      units: [punchbagUnit],
+   });
+
+   const { battleId } = createBattle(
+      game,
+      playerOne,
+      playerTwo,
+   );
+
+   // When/Then: Attack not possible if attacker not found, throws error
+   assertThrows(
+      (): void => {
+         game.attack(battleId, 15, 4);
+      },
+      Error,
+      'Cannot attack, did not find attacker unit with join number 15',
+   );
+
+   // When/Then: Attack not possible if defender not found, throws error
+   assertThrows(
+      (): void => {
+         game.attack(battleId, 1, 27);
+      },
+      Error,
+      'Cannot attack, did not find defender unit with join number 27',
+   );
 });
 
 function createBattle(
