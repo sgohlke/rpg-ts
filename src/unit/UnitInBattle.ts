@@ -1,7 +1,5 @@
-import { InBattleStatus } from '../index.ts';
+import { InBattleStatus, Unit } from '../index.ts';
 
-export interface UnitInBattle {
-   joinNumber: number;
-   name: string;
+export interface UnitInBattle extends Unit {
    inBattleStatus: InBattleStatus;
 }

@@ -1,7 +1,12 @@
-import { CounterAttackStrategy, GamePlayer, UnitInBattle } from '../index.ts';
+import {
+   CounterAttackStrategy,
+   GamePlayer,
+   Unit,
+   UnitInBattle,
+} from '../index.ts';
 
 export class PlayerInBattle extends GamePlayer {
-   unitsInBattle: Array<UnitInBattle> = [];
+   private unitsInBattle: Array<UnitInBattle> = [];
    counterAttackStrategy: CounterAttackStrategy;
 
    constructor(
@@ -10,14 +15,21 @@ export class PlayerInBattle extends GamePlayer {
    ) {
       super(player);
       this.counterAttackStrategy = counterAttackStrategy;
-      this.initUnitsInBattle();
+      this.initUnitsInBattle(player.getUnits());
    }
 
-   initUnitsInBattle(): void {
-      for (const unit of this.units) {
+   initUnitsInBattle(units: ReadonlyArray<Unit>): void {
+      for (const unit of units) {
+         this.unitsInBattle;
+
          this.unitsInBattle.push({
-            joinNumber: unit.joinNumber,
             name: unit.name,
+            joinNumber: unit.joinNumber,
+            defaultStatus: {
+               hp: unit.defaultStatus.hp,
+               atk: unit.defaultStatus.atk,
+               def: unit.defaultStatus.def,
+            },
             inBattleStatus: {
                hp: unit.defaultStatus.hp,
                atk: unit.defaultStatus.atk,
@@ -49,5 +61,9 @@ export class PlayerInBattle extends GamePlayer {
          ];
       }
       return undefined;
+   }
+
+   getNumberOfUnitsInBattle(): number {
+      return this.unitsInBattle.length;
    }
 }

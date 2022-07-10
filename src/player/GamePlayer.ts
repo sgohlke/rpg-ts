@@ -1,15 +1,14 @@
-import { PlayerWithUnits, Unit } from '../index.ts';
+import { Player, Unit } from '../index.ts';
 
-export class GamePlayer implements PlayerWithUnits {
+export class GamePlayer implements Player {
    playerId: string;
    name: string;
-   nextJoinNumber = 1;
-   units: Array<Unit> = [];
+   private nextJoinNumber = 1;
+   private units: Array<Unit> = [];
 
-   constructor(player: PlayerWithUnits) {
+   constructor(player: Player) {
       this.playerId = player.playerId;
       this.name = player.name;
-      this.units = player.units || [];
    }
 
    addUnit(unit: Unit): number {
@@ -25,5 +24,13 @@ export class GamePlayer implements PlayerWithUnits {
 
    getUnit(joinNumber: number): Unit | undefined {
       return this.units.find((entry) => entry.joinNumber === joinNumber);
+   }
+
+   getNumberOfUnits(): number {
+      return this.units.length;
+   }
+
+   getUnits(): ReadonlyArray<Unit> {
+      return this.units;
    }
 }

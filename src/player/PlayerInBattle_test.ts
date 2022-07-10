@@ -1,4 +1,5 @@
 import {
+   assert,
    assertEquals,
    GamePlayer,
    getDefaultUnit,
@@ -11,16 +12,19 @@ Deno.test('PlayerInBattle is correctly created', () => {
    const player: GamePlayer = new GamePlayer({
       playerId: 'p1',
       name: 'Test Player',
-      units: [unit],
    });
+   player.addUnit(unit);
+   assertEquals(player.getNumberOfUnits(), 1);
 
    const playerInBattle = new PlayerInBattle(player);
    assertEquals(playerInBattle.playerId, 'p1');
    assertEquals(playerInBattle.name, 'Test Player');
-   assertEquals(playerInBattle.units.length, 1);
+   assertEquals(playerInBattle.getNumberOfUnitsInBattle(), 1);
+   //assertEquals(playerInBattle, undefined);
 
-   const unitInBattle = playerInBattle.unitsInBattle[0];
-   assertEquals(unitInBattle.joinNumber, unit.joinNumber);
+   const unitInBattle = playerInBattle.getUnitInBattle(1);
+   assert(unitInBattle);
+   assertEquals(unitInBattle.joinNumber, 1);
    assertEquals(unitInBattle.name, unit.name);
    assertEquals(
       unitInBattle.inBattleStatus,
@@ -37,8 +41,8 @@ Deno.test('findRandomNonDefeatedUnit returns undefined if no undefeated units ar
    const player: GamePlayer = new GamePlayer({
       playerId: 'p1',
       name: 'Test Player',
-      units: [unit],
    });
+   player.addUnit(unit);
    const playerInBattle = new PlayerInBattle(player);
    assertEquals(playerInBattle.findRandomNonDefeatedUnit(), undefined);
 });

@@ -1,7 +1,7 @@
 import { Status } from '../index.ts';
 
 export interface Unit {
-   joinNumber: number;
+   joinNumber?: number;
    name: string;
    defaultStatus: Status;
 }

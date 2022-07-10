@@ -15,16 +15,20 @@ Deno.test('Battle is correctly created', () => {
       new GamePlayer({
          playerId: 'p1',
          name: 'Test Player',
-         units: [unitOne, unitTwo],
       }),
    );
+   playerOne.addUnit(unitOne);
+   playerOne.addUnit(unitTwo);
+
    const playerTwo: PlayerInBattle = new PlayerInBattle(
       new GamePlayer({
          playerId: 'p2',
          name: 'AI Player',
-         units: [unitOne, unitTwo],
       }),
    );
+   playerTwo.addUnit(unitOne);
+   playerTwo.addUnit(unitTwo);
+
    const battle: Battle = {
       battleId: 'p1-p2-1111',
       playerOne,

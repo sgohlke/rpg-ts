@@ -3,13 +3,12 @@ import {
    BattleStatus,
    CounterAttackStrategy,
    CounterAttackUnits,
-   Game,
    GamePlayer,
    PlayerInBattle,
    UnitInBattle,
 } from '../index.ts';
 
-export class PlayerAgainstAIGame implements Game {
+export class PlayerAgainstAIGame {
    private nextPlayerId = 1;
    private players: Array<GamePlayer> = [];
    private battles: Array<Battle> = [];

@@ -7,7 +7,7 @@ Deno.test('GamePlayer is correctly created', () => {
    });
    assertEquals(player.playerId, 'p1');
    assertEquals(player.name, 'Test Player');
-   assertEquals(player.units.length, 0);
+   assertEquals(player.getNumberOfUnits(), 0);
 });
 
 Deno.test('Correct unit is added to GamePlayer', () => {
@@ -17,7 +17,7 @@ Deno.test('Correct unit is added to GamePlayer', () => {
    });
    const unit = getDefaultUnit('1');
    const newUnitId = player.addUnit(unit);
-   assertEquals(player.units.length, 1);
+   assertEquals(player.getNumberOfUnits(), 1);
    const newUnit = player.getUnit(newUnitId);
    assert(newUnit);
    assertEquals(newUnit.joinNumber, newUnitId);
