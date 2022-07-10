@@ -1,20 +1,21 @@
 import {
-   CounterAttackStrategy,
+   CounterAttackFunction,
    GamePlayer,
+   randomCounterAttackFunction,
    Unit,
    UnitInBattle,
 } from '../index.ts';
 
 export class PlayerInBattle extends GamePlayer {
    private unitsInBattle: Array<UnitInBattle> = [];
-   counterAttackStrategy: CounterAttackStrategy;
+   counterAttackFunction?: CounterAttackFunction;
 
    constructor(
       player: GamePlayer,
-      counterAttackStrategy = CounterAttackStrategy.RANDOM_ATTACK,
+      counterAttackFunction = randomCounterAttackFunction,
    ) {
       super(player);
-      this.counterAttackStrategy = counterAttackStrategy;
+      this.counterAttackFunction = counterAttackFunction;
       this.initUnitsInBattle(player.getUnits());
    }
 

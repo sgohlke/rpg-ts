@@ -1,11 +1,10 @@
 import {
    Battle,
    BattleStatus,
-   CounterAttackStrategy,
-   CounterAttackUnits,
+   calculateDamage,
    GamePlayer,
    PlayerInBattle,
-   UnitInBattle,
+   randomCounterAttackFunction,
 } from '../index.ts';
 
 export class PlayerAgainstAIGame {
@@ -28,7 +27,7 @@ export class PlayerAgainstAIGame {
    createBattle(
       playerOneId: string | undefined,
       playerTwoId: string | undefined,
-      playerTwoCounterAttackStrategy = CounterAttackStrategy.RANDOM_ATTACK,
+      playerTwoCounterAttackFunction = randomCounterAttackFunction,
    ): string | undefined {
       const battleId = this.createBattleId(playerOneId, playerTwoId);
       const playerOne = this.getPlayer(playerOneId);
@@ -39,7 +38,7 @@ export class PlayerAgainstAIGame {
             playerOne: new PlayerInBattle(playerOne),
             playerTwo: new PlayerInBattle(
                playerTwo,
-               playerTwoCounterAttackStrategy,
+               playerTwoCounterAttackFunction,
             ),
             battleStatus: BattleStatus.ACTIVE,
          });
@@ -51,31 +50,6 @@ export class PlayerAgainstAIGame {
 
    getBattle(battleId: string): Battle | undefined {
       return this.battles.find((entry) => entry.battleId === battleId);
-   }
-
-   determineCounterAttackUnits(
-      playerTwo: PlayerInBattle,
-      playerOne: PlayerInBattle,
-   ): CounterAttackUnits {
-      if (playerTwo.isDefeated() || playerOne.isDefeated()) {
-         return {
-            counterAttacker: undefined,
-            counterTarget: undefined,
-         };
-      }
-
-      switch (playerTwo.counterAttackStrategy) {
-         case CounterAttackStrategy.NO_COUNTER_ATTACK:
-            return {
-               counterAttacker: undefined,
-               counterTarget: undefined,
-            };
-         case CounterAttackStrategy.RANDOM_ATTACK:
-            return {
-               counterAttacker: playerTwo.findRandomNonDefeatedUnit(),
-               counterTarget: playerOne.findRandomNonDefeatedUnit(),
-            };
-      }
    }
 
    attack(
@@ -118,25 +92,14 @@ export class PlayerAgainstAIGame {
          }
 
          if (attackerUnit && defenderUnit) {
-            defenderUnit.inBattleStatus.hp -= this.calculateDamage(
+            defenderUnit.inBattleStatus.hp -= calculateDamage(
                attackerUnit,
                defenderUnit,
             );
          }
 
-         const { counterAttacker, counterTarget } = this
-            .determineCounterAttackUnits(battle.playerTwo, battle.playerOne);
-         if (counterAttacker && counterTarget) {
-            counterTarget.inBattleStatus.hp -= this.calculateDamage(
-               counterAttacker,
-               counterTarget,
-            );
-            battle.counterAttackUnits = { counterAttacker, counterTarget };
-         } else {
-            battle.counterAttackUnits = {
-               counterAttacker: undefined,
-               counterTarget: undefined,
-            };
+         if (battle.playerTwo.counterAttackFunction) {
+            battle.playerTwo.counterAttackFunction(battle);
          }
 
          const winner = this.determineWinner(
@@ -149,18 +112,6 @@ export class PlayerAgainstAIGame {
          }
       }
       return battle;
-   }
-
-   private calculateDamage(
-      attackerUnit: UnitInBattle,
-      defenderUnit: UnitInBattle,
-   ): number {
-      let damage = attackerUnit.inBattleStatus.atk -
-         defenderUnit.inBattleStatus.def;
-      if (damage < 1) {
-         damage = 1;
-      }
-      return damage;
    }
 
    private determineWinner(

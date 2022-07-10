@@ -4,10 +4,11 @@ import {
    assertThrows,
    Battle,
    BattleStatus,
-   CounterAttackStrategy,
    GamePlayer,
    getDefaultUnit,
+   noCounterAttackFunction,
    PlayerAgainstAIGame,
+   randomCounterAttackFunction,
 } from '../index.ts';
 
 const slimeUnit = getDefaultUnit('1');
@@ -316,7 +317,7 @@ Deno.test('Enemy player does not counterattack if NO_COUNTER_ATTACK strategy is 
       game,
       playerOne,
       playerTwo,
-      CounterAttackStrategy.NO_COUNTER_ATTACK,
+      noCounterAttackFunction,
    );
 
    const battle = game.attack(battleId, 1, 1);
@@ -439,7 +440,7 @@ function createBattle(
    game: PlayerAgainstAIGame,
    playerOne: GamePlayer,
    playerTwo: GamePlayer,
-   playerTwoCounterAttackStrategy = CounterAttackStrategy.RANDOM_ATTACK,
+   playerTwoCounterAttackStrategy = randomCounterAttackFunction,
 ): { battleId: string; battle: Battle } {
    const newPlayerOneId = game.createPlayer(playerOne);
    assertEquals(newPlayerOneId, 'p1');

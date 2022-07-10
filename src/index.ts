@@ -2,7 +2,7 @@ export * from './deps.ts';
 export * from './battle/Battle.ts';
 export * from './battle/BattleStatus.ts';
 export * from './game/PlayerAgainstAIGame.ts';
-export * from './player/CounterAttackStrategy.ts';
+export * from './player/CounterAttackFunction.ts';
 export * from './player/CounterAttackUnits.ts';
 export * from './player/GamePlayer.ts';
 export * from './player/Player.ts';
