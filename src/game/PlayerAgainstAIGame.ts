@@ -86,6 +86,11 @@ export class PlayerAgainstAIGame implements Game {
    ): Battle | undefined {
       const battle = this.getBattle(battleId);
       if (battle) {
+
+         if (battle.battleStatus === BattleStatus.ENDED ) {
+            throw new Error('Cannot attack in a battle that has already ended');
+         }
+
          const attackerUnit = battle.playerOne.getUnitInBattle(
             attakerJoinNumber,
          );
