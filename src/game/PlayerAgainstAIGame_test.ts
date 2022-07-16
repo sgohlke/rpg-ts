@@ -436,6 +436,113 @@ Deno.test('Cannot attack if attacker or defender unit is not found', () => {
    );
 });
 
+Deno.test('PlayerAccount is correctly created and added to PlayerAccount map', async () => {
+   const game = new PlayerAgainstAIGame();
+   const playerOne: GamePlayer = new GamePlayer({
+      playerId: 'doesnotmatter',
+      name: 'Test Player',
+   });
+   playerOne.addUnit(slimeUnit);
+   playerOne.addUnit(parentSlimeUnit);
+
+   const newPlayerId = await game.registerPlayer(
+      playerOne,
+      'Test Player',
+      'tp',
+      '12345',
+   );
+   assertEquals(newPlayerId, 'p1');
+
+   const playerAccount = game.getPlayerAccount(newPlayerId);
+   assert(playerAccount);
+   assertEquals(playerAccount.playerId, newPlayerId);
+   assertEquals(playerAccount.name, 'Test Player');
+   assertEquals(playerAccount.userName, 'tp');
+   assertEquals(
+      playerAccount.userPassword,
+      '5994471abb01112afcc18159f6cc74b4f511b99806da59b3caf5a9c173cacfc5',
+   );
+});
+
+Deno.test('Login is working if correct username and password are provided', async () => {
+   const game = new PlayerAgainstAIGame();
+   const playerOne: GamePlayer = new GamePlayer({
+      playerId: 'doesnotmatter',
+      name: 'Test Player',
+   });
+   playerOne.addUnit(slimeUnit);
+   playerOne.addUnit(parentSlimeUnit);
+
+   const newPlayerId = await game.registerPlayer(
+      playerOne,
+      'Test Player',
+      'tp',
+      '12345',
+   );
+   assertEquals(newPlayerId, 'p1');
+
+   game.login('tp', '12345')
+      .then((data) => {
+         assert(data);
+         assert(game.getAccessTokenForPlayer('p1'));
+      })
+      .catch((err) =>
+         assertEquals(err.message, 'Should not throw error, see above')
+      );
+});
+
+Deno.test('Login throws error if matching PlayerAccount is not available', async () => {
+   const game = new PlayerAgainstAIGame();
+   const playerOne: GamePlayer = new GamePlayer({
+      playerId: 'doesnotmatter',
+      name: 'Test Player',
+   });
+   playerOne.addUnit(slimeUnit);
+   playerOne.addUnit(parentSlimeUnit);
+
+   const newPlayerId = await game.registerPlayer(
+      playerOne,
+      'Test Player',
+      'tp',
+      '12345',
+   );
+   assertEquals(newPlayerId, 'p1');
+
+   game.login('doesnotexists', 'doesnotmatter')
+      .then((data) =>
+         assertEquals(data, 'Should not resolve and throw error, see below')
+      )
+      .catch((err) =>
+         assertEquals(err.message, 'Login failed! Invalid credentials')
+      );
+});
+
+Deno.test('Login throws error if password is wrong', async () => {
+   const game = new PlayerAgainstAIGame();
+   const playerOne: GamePlayer = new GamePlayer({
+      playerId: 'doesnotmatter',
+      name: 'Test Player',
+   });
+   playerOne.addUnit(slimeUnit);
+   playerOne.addUnit(parentSlimeUnit);
+
+   const newPlayerId = await game.registerPlayer(
+      playerOne,
+      'Test Player',
+      'tp',
+      '12345',
+   );
+   assertEquals(newPlayerId, 'p1');
+
+   game.login('tp', 'wrongPassword')
+      .then((data) =>
+         assertEquals(data, 'Should not resolve and throw error, see below')
+      )
+      .catch((err) =>
+         assertEquals(err.message, 'Login failed! Invalid credentials')
+      );
+});
+
 function createBattle(
    game: PlayerAgainstAIGame,
    playerOne: GamePlayer,

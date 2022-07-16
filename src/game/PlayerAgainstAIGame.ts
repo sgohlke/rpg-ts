@@ -2,17 +2,45 @@ import {
    Battle,
    BattleStatus,
    calculateDamage,
+   createPasswordHash,
    GamePlayer,
+   generateAccessTokenHash,
+   PlayerAccount,
    PlayerInBattle,
    randomCounterAttackFunction,
+   verifyPassword,
 } from '../index.ts';
 
 export class PlayerAgainstAIGame {
    private nextPlayerId = 1;
    private players: Array<GamePlayer> = [];
    private battles: Array<Battle> = [];
+   private playerAccounts: Array<PlayerAccount> = [];
+   private playerAccessTokens: Map<string, string> = new Map<string, string>();
 
-   createPlayer(player: GamePlayer): string | undefined {
+   async registerPlayer(
+      player: GamePlayer,
+      name: string,
+      userName: string,
+      password: string,
+   ): Promise<string> {
+      //TODO: Check if player with username already exists, if so throw error
+      const playerId = this.createPlayer(player);
+      const hashedPassword = await createPasswordHash(password);
+      this.playerAccounts.push({
+         playerId: playerId,
+         name: name,
+         userName: userName,
+         userPassword: hashedPassword,
+      });
+      return playerId;
+   }
+
+   getPlayerAccount(playerId: string): PlayerAccount | undefined {
+      return this.playerAccounts.find((entry) => entry.playerId === playerId);
+   }
+
+   createPlayer(player: GamePlayer): string {
       const newPlayerId = 'p' + this.nextPlayerId;
       player.playerId = newPlayerId;
       this.players.push(player);
@@ -22,6 +50,32 @@ export class PlayerAgainstAIGame {
 
    getPlayer(playerId: string | undefined): GamePlayer | undefined {
       return this.players.find((entry) => entry.playerId === playerId);
+   }
+
+   async login(userName: string, userPassword: string): Promise<string> {
+      const playerAccount = this.playerAccounts.find((entry) =>
+         entry.userName === userName
+      );
+      if (!playerAccount) {
+         throw new Error('Login failed! Invalid credentials');
+      } else {
+         const verificationSuccessful = await verifyPassword(
+            userPassword,
+            playerAccount.userPassword,
+         );
+         if (verificationSuccessful) {
+            // Generate accessToken
+            const accessToken = generateAccessTokenHash();
+            this.playerAccessTokens.set(playerAccount.playerId, accessToken);
+            return accessToken;
+         } else {
+            throw new Error('Login failed! Invalid credentials');
+         }
+      }
+   }
+
+   getAccessTokenForPlayer(playerId: string): string | undefined {
+      return this.playerAccessTokens.get(playerId);
    }
 
    createBattle(
@@ -56,6 +110,7 @@ export class PlayerAgainstAIGame {
       battleId: string,
       attakerJoinNumber: number,
       defenderJoinNumber: number,
+      // attackerPlayerToken?: string,
    ): Battle | undefined {
       const battle = this.getBattle(battleId);
       if (battle) {
@@ -71,6 +126,7 @@ export class PlayerAgainstAIGame {
                `Cannot attack, did not find attacker unit with join number ${attakerJoinNumber}`,
             );
          }
+         //TODO: Check if attackerPlayerToken matches token for playerOne, if not throw an error
 
          const defenderUnit = battle.playerTwo.getUnitInBattle(
             defenderJoinNumber,
