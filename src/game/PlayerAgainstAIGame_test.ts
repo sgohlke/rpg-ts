@@ -127,6 +127,20 @@ Deno.test('Attack in battle is performed correctly', () => {
    assertEquals(defendingUnitDefaultHP, playerTwoSlimeUnit.defaultStatus.hp);
 });
 
+Deno.test('GetBattle will throw error if not matching battle for battleId id found', () => {
+   // Given
+   const game = new PlayerAgainstAIGame();
+
+   // When/Then: Attack punchbag with 0 HP again, throws error
+   assertThrows(
+      (): void => {
+         game.attack('doesnotexist', 1, 1);
+      },
+      Error,
+      'Battle for battleId doesnotexist was not found!',
+   );
+});
+
 Deno.test('Attack in battle is performed correctly and deals at least 1 HP as damage', () => {
    // Given
    const game = new PlayerAgainstAIGame();
@@ -464,32 +478,72 @@ Deno.test('PlayerAccount is correctly created and added to PlayerAccount map', a
    );
 });
 
-Deno.test('Login is working if correct username and password are provided', async () => {
-   const game = new PlayerAgainstAIGame();
-   const playerOne: GamePlayer = new GamePlayer({
-      playerId: 'doesnotmatter',
-      name: 'Test Player',
-   });
-   playerOne.addUnit(slimeUnit);
-   playerOne.addUnit(parentSlimeUnit);
+Deno.test(
+   'Login is working if correct username and password are provided ' +
+      'and a battle can be created and accessed for the registered player',
+   async () => {
+      const game = new PlayerAgainstAIGame();
+      const playerOne: GamePlayer = new GamePlayer({
+         playerId: 'doesnotmatter',
+         name: 'Test Player',
+      });
+      playerOne.addUnit(slimeUnit);
+      playerOne.addUnit(parentSlimeUnit);
 
-   const newPlayerId = await game.registerPlayer(
-      playerOne,
-      'Test Player',
-      'tp',
-      '12345',
-   );
-   assertEquals(newPlayerId, 'p1');
-
-   game.login('tp', '12345')
-      .then((data) => {
-         assert(data);
-         assert(game.getAccessTokenForPlayer('p1'));
-      })
-      .catch((err) =>
-         assertEquals(err.message, 'Should not throw error, see above')
+      const newPlayerId = await game.registerPlayer(
+         playerOne,
+         'Test Player',
+         'tp',
+         '12345',
       );
-});
+      assertEquals(newPlayerId, 'p1');
+
+      game.login('tp', '12345')
+         .then((data) => {
+            assert(data);
+            const accessToken = game.getAccessTokenForPlayer('p1');
+            assert(accessToken);
+
+            const playerTwo: GamePlayer = new GamePlayer({
+               playerId: 'doesnotmatter',
+               name: 'AI Player',
+            });
+            playerTwo.addUnit(slimeUnit);
+            playerTwo.addUnit(parentSlimeUnit);
+
+            const { battleId, battle } = createNonTutorialBattle(
+               game,
+               newPlayerId,
+               accessToken,
+               playerTwo,
+               randomCounterAttackFunction,
+            );
+            assert(battle);
+            assertEquals(battle.isTutorialBattle, false);
+
+            //When/Then: If accessToken is wrong, getBattle should return undefined
+            const battleWhenWrongToken = game.getBattle(battleId, 'wrongToken');
+            assert(!battleWhenWrongToken);
+
+            // When/Then: Attacking without access token will return missing access token error
+            assertThrows(
+               (): void => {
+                  game.attack(battleId, 1, 1);
+               },
+               Error,
+               'Access token needs to be provided in order to get battle',
+            );
+
+            // When: Attacking with accessToken
+            const battleAfterAttack = game.attack(battleId, 1, 1, accessToken);
+            // Then: Attack is successful, does not throw error
+            assert(battleAfterAttack);
+         })
+         .catch((err) =>
+            assertEquals(err.message, 'Should not throw error, see above')
+         );
+   },
+);
 
 Deno.test('Login throws error if matching PlayerAccount is not available', async () => {
    const game = new PlayerAgainstAIGame();
@@ -515,6 +569,34 @@ Deno.test('Login throws error if matching PlayerAccount is not available', async
       .catch((err) =>
          assertEquals(err.message, 'Login failed! Invalid credentials')
       );
+});
+
+Deno.test('isAuthorizedPlayer will throw error if not accessToken is provided', () => {
+   // Given
+   const game = new PlayerAgainstAIGame();
+
+   // When/Then: Attack punchbag with 0 HP again, throws error
+   assertThrows(
+      (): void => {
+         game.isAuthorizedPlayer('p1', '');
+      },
+      Error,
+      'Access Token for player p1 has to be provided.',
+   );
+});
+
+Deno.test('isAuthorizedPlayer will throw error if accessToken for player is not avaiable', () => {
+   // Given
+   const game = new PlayerAgainstAIGame();
+
+   // When/Then: Attack punchbag with 0 HP again, throws error
+   assertThrows(
+      (): void => {
+         game.isAuthorizedPlayer('p1', 'doesnotmatter');
+      },
+      Error,
+      'Did not find access token for player p1',
+   );
 });
 
 Deno.test('Login throws error if password is wrong', async () => {
@@ -561,6 +643,28 @@ function createBattle(
    assert(battleId);
 
    const battle = game.getBattle(battleId);
+   assert(battle);
+   return { battleId, battle };
+}
+
+function createNonTutorialBattle(
+   game: PlayerAgainstAIGame,
+   playerOneId: string,
+   playerOneAccessToken: string,
+   playerTwo: GamePlayer,
+   playerTwoCounterAttackStrategy = randomCounterAttackFunction,
+): { battleId: string; battle: Battle } {
+   const newPlayerTwoId = game.createPlayer(playerTwo);
+   assert(newPlayerTwoId);
+   const battleId = game.createBattle(
+      playerOneId,
+      newPlayerTwoId,
+      playerTwoCounterAttackStrategy,
+      false,
+   );
+   assert(battleId);
+
+   const battle = game.getBattle(battleId, playerOneAccessToken);
    assert(battle);
    return { battleId, battle };
 }

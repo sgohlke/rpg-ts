@@ -7,4 +7,5 @@ export interface Battle {
    battleStatus: BattleStatus;
    battleWinner?: PlayerInBattle;
    counterAttackUnits?: CounterAttackUnits;
+   isTutorialBattle?: boolean;
 }

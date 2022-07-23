@@ -82,6 +82,7 @@ export class PlayerAgainstAIGame {
       playerOneId: string | undefined,
       playerTwoId: string | undefined,
       playerTwoCounterAttackFunction = randomCounterAttackFunction,
+      isTutorialBattle = true,
    ): string | undefined {
       const battleId = this.createBattleId(playerOneId, playerTwoId);
       const playerOne = this.getPlayer(playerOneId);
@@ -95,6 +96,7 @@ export class PlayerAgainstAIGame {
                playerTwoCounterAttackFunction,
             ),
             battleStatus: BattleStatus.ACTIVE,
+            isTutorialBattle: isTutorialBattle,
          });
          return battleId;
       } else {
@@ -102,17 +104,40 @@ export class PlayerAgainstAIGame {
       }
    }
 
-   getBattle(battleId: string): Battle | undefined {
-      return this.battles.find((entry) => entry.battleId === battleId);
+   getBattle(
+      battleId: string,
+      playerOneAccessToken?: string,
+   ): Battle | undefined {
+      const battle = this.battles.find((entry) => entry.battleId === battleId);
+      if (!battle) {
+         throw new Error(
+            `Battle for battleId ${battleId} was not found!`,
+         );
+      } else if (battle.isTutorialBattle) {
+         return battle;
+      } else {
+         if (!playerOneAccessToken) {
+            throw new Error(
+               'Access token needs to be provided in order to get battle',
+            );
+         } else {
+            return this.isAuthorizedPlayer(
+                  battle.playerOne.playerId,
+                  playerOneAccessToken,
+               )
+               ? battle
+               : undefined;
+         }
+      }
    }
 
    attack(
       battleId: string,
       attakerJoinNumber: number,
       defenderJoinNumber: number,
-      // attackerPlayerToken?: string,
+      playerOneAccessToken?: string,
    ): Battle | undefined {
-      const battle = this.getBattle(battleId);
+      const battle = this.getBattle(battleId, playerOneAccessToken);
       if (battle) {
          if (battle.battleStatus === BattleStatus.ENDED) {
             throw new Error('Cannot attack in a battle that has already ended');
@@ -126,7 +151,6 @@ export class PlayerAgainstAIGame {
                `Cannot attack, did not find attacker unit with join number ${attakerJoinNumber}`,
             );
          }
-         //TODO: Check if attackerPlayerToken matches token for playerOne, if not throw an error
 
          const defenderUnit = battle.playerTwo.getUnitInBattle(
             defenderJoinNumber,
@@ -185,5 +209,22 @@ export class PlayerAgainstAIGame {
       playerTwoId: string | undefined,
    ): string {
       return playerOneId + '-' + playerTwoId + '_' + Date.now();
+   }
+
+   public isAuthorizedPlayer(
+      playerId: string,
+      providedAccessToken: string,
+   ): boolean {
+      if (!providedAccessToken) {
+         throw new Error(
+            `Access Token for player ${playerId} has to be provided.`,
+         );
+      }
+      const knownAccessTokenForPlayer = this.getAccessTokenForPlayer(playerId);
+      if (!knownAccessTokenForPlayer) {
+         throw new Error(`Did not find access token for player ${playerId}`);
+      }
+
+      return knownAccessTokenForPlayer === providedAccessToken;
    }
 }
