@@ -16,13 +16,12 @@ export class PlayerInBattle extends GamePlayer {
    ) {
       super(player);
       this.counterAttackFunction = counterAttackFunction;
+      //FIXME: Also initialize units, not only unitsInBattle
       this.initUnitsInBattle(player.getUnits());
    }
 
    initUnitsInBattle(units: ReadonlyArray<Unit>): void {
       for (const unit of units) {
-         this.unitsInBattle;
-
          this.unitsInBattle.push({
             name: unit.name,
             joinNumber: unit.joinNumber,
