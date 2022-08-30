@@ -10,13 +10,12 @@ jobs:
       - uses: actions/checkout@v2
       - uses: denoland/setup-deno@v1
         with:
-          deno-version: '1.23.3'
+          deno-version: '1.25.0'
       - name: Cache https://
         uses: actions/cache@v2
         with:
           path: ~/.cache/deno/deps/https
           key: deno-https/v1-${{ github.sha }}
           restore-keys: deno-https/v1-
-      - run: deno lint
-      - run: deno test --coverage=covresults
-      - run: deno coverage covresults
+      - run: deno task lint
+      - run: deno task coverage

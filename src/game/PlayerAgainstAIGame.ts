@@ -84,6 +84,7 @@ export class PlayerAgainstAIGame {
       playerTwoCounterAttackFunction = randomCounterAttackFunction,
       isTutorialBattle = true,
    ): string | undefined {
+      //TODO: Add playerOneAccessToken. If not isTutorialBattle and token is wrong do not create new battle
       const battleId = this.createBattleId(playerOneId, playerTwoId);
       const playerOne = this.getPlayer(playerOneId);
       const playerTwo = this.getPlayer(playerTwoId);
