@@ -499,8 +499,13 @@ Deno.test(
       assertEquals(newPlayerId, 'p1');
 
       game.login('tp', '12345')
-         .then((playerOneAccessToken) => {
-            assert(playerOneAccessToken);
+         .then((loggedInPlayer) => {
+            assert(loggedInPlayer);
+            assertEquals(loggedInPlayer.name, 'Test Player');
+            assertEquals(loggedInPlayer.userName, 'tp');
+            assertEquals(loggedInPlayer.playerId, 'p1');
+            assert(loggedInPlayer.accessToken);
+
             const playerTwo: GamePlayer = new GamePlayer({
                playerId: 'doesnotmatter',
                name: 'AI Player',
@@ -511,7 +516,7 @@ Deno.test(
             const { battleId, battle } = createNonTutorialBattle(
                game,
                newPlayerId,
-               playerOneAccessToken,
+               loggedInPlayer.accessToken,
                playerTwo,
                randomCounterAttackFunction,
             );
@@ -535,7 +540,7 @@ Deno.test(
             assert(battleId)
 
             // When: Attacking with accessToken
-            const battleAfterAttack = game.attack(battleId, 1, 1, playerOneAccessToken);
+            const battleAfterAttack = game.attack(battleId, 1, 1, loggedInPlayer.accessToken);
             // Then: Attack is successful, does not throw error
             assert(battleAfterAttack);
          })
@@ -564,8 +569,8 @@ Deno.test('Login throws error if matching PlayerAccount is not available', async
    assertEquals(newPlayerId, 'p1');
 
    game.login('doesnotexists', 'doesnotmatter')
-      .then((data) =>
-         assertEquals(data, 'Should not resolve and throw error, see below')
+      .then((loggedInPlayer) =>
+         assertEquals(loggedInPlayer.name, 'Should not resolve and throw error, see below')
       )
       .catch((err) =>
          assertEquals(err.message, 'Login failed! Invalid credentials')
@@ -618,8 +623,8 @@ Deno.test('Login throws error if password is wrong', async () => {
    assertEquals(newPlayerId, 'p1');
 
    game.login('tp', 'wrongPassword')
-      .then((data) =>
-         assertEquals(data, 'Should not resolve and throw error, see below')
+      .then((loggedInPlayer) =>
+         assertEquals(loggedInPlayer.name, 'Should not resolve and throw error, see below')
       )
       .catch((err) =>
          assertEquals(err.message, 'Login failed! Invalid credentials')

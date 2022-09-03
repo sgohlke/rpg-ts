@@ -6,6 +6,7 @@ export * from './game/PlayerAgainstAIGame.ts';
 export * from './player/CounterAttackFunction.ts';
 export * from './player/CounterAttackUnits.ts';
 export * from './player/GamePlayer.ts';
+export * from './player/LoggedInPlayer.ts';
 export * from './player/Player.ts';
 export * from './player/PlayerAccount.ts';
 export * from './player/PlayerInBattle.ts';

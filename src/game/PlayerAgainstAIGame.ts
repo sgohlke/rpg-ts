@@ -5,6 +5,7 @@ import {
    createPasswordHash,
    GamePlayer,
    generateAccessTokenHash,
+   LoggedInPlayer,
    PlayerAccount,
    PlayerInBattle,
    randomCounterAttackFunction,
@@ -60,7 +61,7 @@ export class PlayerAgainstAIGame {
       return this.players.find((entry) => entry.playerId === playerId);
    }
 
-   async login(userName: string, userPassword: string): Promise<string> {
+   async login(userName: string, userPassword: string): Promise<LoggedInPlayer> {
       const playerAccount = this.playerAccounts.find((entry) =>
          entry.userName === userName
       );
@@ -75,7 +76,12 @@ export class PlayerAgainstAIGame {
             // Generate accessToken
             const accessToken = generateAccessTokenHash();
             this.playerAccessTokens.set(playerAccount.playerId, accessToken);
-            return accessToken;
+            return { 
+               playerId: playerAccount.playerId,
+               userName: playerAccount.userName,
+               name: playerAccount.name,
+               accessToken: accessToken 
+            } ;
          } else {
             throw new Error('Login failed! Invalid credentials');
          }
