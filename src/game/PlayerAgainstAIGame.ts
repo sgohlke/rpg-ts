@@ -24,7 +24,11 @@ export class PlayerAgainstAIGame {
       userName: string,
       password: string,
    ): Promise<string> {
-      //TODO: Check if player with username already exists, if so throw error
+      const playerExists = this.doesPlayerExist(userName) 
+      if (playerExists) {
+         throw new Error(`Cannot register user "${userName}", the username allready exists`);
+      }
+
       const playerId = this.createPlayer(player);
       const hashedPassword = await createPasswordHash(password);
       this.playerAccounts.push({
@@ -34,6 +38,10 @@ export class PlayerAgainstAIGame {
          userPassword: hashedPassword,
       });
       return playerId;
+   }
+
+   doesPlayerExist(userName: string): boolean {
+      return this.playerAccounts.some((entry) => entry.userName === userName);
    }
 
    getPlayerAccount(playerId: string): PlayerAccount | undefined {
@@ -83,8 +91,22 @@ export class PlayerAgainstAIGame {
       playerTwoId: string | undefined,
       playerTwoCounterAttackFunction = randomCounterAttackFunction,
       isTutorialBattle = true,
+      playerOneAccessToken?: string,
    ): string | undefined {
-      //TODO: Add playerOneAccessToken. If not isTutorialBattle and token is wrong do not create new battle
+      if (!isTutorialBattle) {
+         if (!playerOneAccessToken) {
+            throw new Error(
+               'Access token needs to be provided in order to create a non-tutorial battle',
+            );
+         } else if (!playerOneId) {
+            throw new Error(
+               'playerOneId needs to be provied to create non-tutorial battle.',
+            );
+         } else if (!this.isAuthorizedPlayer(playerOneId, playerOneAccessToken)){
+            throw new Error('Non-tutorial battle cannot be created. Reason: Invalid credentials');
+         } 
+      }
+
       const battleId = this.createBattleId(playerOneId, playerTwoId);
       const playerOne = this.getPlayer(playerOneId);
       const playerTwo = this.getPlayer(playerTwoId);
@@ -199,7 +221,6 @@ export class PlayerAgainstAIGame {
       playerOne: PlayerInBattle,
       playerTwo: PlayerInBattle,
    ): PlayerInBattle | undefined {
-      //TODO: Add test case for playerOne defeated after counter-attack has been added
       return playerOne.isDefeated()
          ? playerTwo
          : (playerTwo.isDefeated() ? playerOne : undefined);
