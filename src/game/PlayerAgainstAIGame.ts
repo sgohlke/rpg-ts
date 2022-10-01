@@ -150,6 +150,7 @@ export class PlayerAgainstAIGame {
                'Access token needs to be provided in order to get battle',
             );
          } else {
+            //TODO: Add check if player is authorized, else throw error
             return this.isAuthorizedPlayer(
                   battle.playerOne.playerId,
                   playerOneAccessToken,
