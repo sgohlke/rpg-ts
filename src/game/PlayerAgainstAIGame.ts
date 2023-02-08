@@ -25,9 +25,11 @@ export class PlayerAgainstAIGame {
       userName: string,
       password: string,
    ): Promise<string> {
-      const playerExists = this.doesPlayerExist(userName) 
+      const playerExists = this.doesPlayerExist(userName);
       if (playerExists) {
-         throw new Error(`Cannot register user "${userName}", the username allready exists`);
+         throw new Error(
+            `Cannot register user "${userName}", the username allready exists`,
+         );
       }
 
       const playerId = this.createPlayer(player);
@@ -61,7 +63,10 @@ export class PlayerAgainstAIGame {
       return this.players.find((entry) => entry.playerId === playerId);
    }
 
-   async login(userName: string, userPassword: string): Promise<LoggedInPlayer> {
+   async login(
+      userName: string,
+      userPassword: string,
+   ): Promise<LoggedInPlayer> {
       const playerAccount = this.playerAccounts.find((entry) =>
          entry.userName === userName
       );
@@ -76,12 +81,12 @@ export class PlayerAgainstAIGame {
             // Generate accessToken
             const accessToken = generateAccessTokenHash();
             this.playerAccessTokens.set(playerAccount.playerId, accessToken);
-            return { 
+            return {
                playerId: playerAccount.playerId,
                userName: playerAccount.userName,
                name: playerAccount.name,
-               accessToken: accessToken 
-            } ;
+               accessToken: accessToken,
+            };
          } else {
             throw new Error('Login failed! Invalid credentials');
          }
@@ -108,9 +113,13 @@ export class PlayerAgainstAIGame {
             throw new Error(
                'playerOneId needs to be provied to create non-tutorial battle.',
             );
-         } else if (!this.isAuthorizedPlayer(playerOneId, playerOneAccessToken)){
-            throw new Error('Non-tutorial battle cannot be created. Reason: Invalid credentials');
-         } 
+         } else if (
+            !this.isAuthorizedPlayer(playerOneId, playerOneAccessToken)
+         ) {
+            throw new Error(
+               'Non-tutorial battle cannot be created. Reason: Invalid credentials',
+            );
+         }
       }
 
       const battleId = this.createBattleId(playerOneId, playerTwoId);

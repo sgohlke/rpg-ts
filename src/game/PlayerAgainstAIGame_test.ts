@@ -524,10 +524,10 @@ Deno.test(
             assertEquals(battle.isTutorialBattle, false);
 
             //When/Then: If accessToken is wrong, getBattle should return undefined
-            assert(battleId)
+            assert(battleId);
             const battleWhenWrongToken = game.getBattle(battleId, 'wrongToken');
             assert(!battleWhenWrongToken);
-            assert(battleId)
+            assert(battleId);
 
             // When/Then: Attacking without access token will return missing access token error
             assertThrows(
@@ -537,17 +537,21 @@ Deno.test(
                Error,
                'Access token needs to be provided in order to get battle',
             );
-            assert(battleId)
+            assert(battleId);
 
             // When: Attacking with accessToken
-            const battleAfterAttack = game.attack(battleId, 1, 1, loggedInPlayer.accessToken);
+            const battleAfterAttack = game.attack(
+               battleId,
+               1,
+               1,
+               loggedInPlayer.accessToken,
+            );
             // Then: Attack is successful, does not throw error
             assert(battleAfterAttack);
          })
          .catch((err) => {
-            assertEquals(err.message, 'Should not throw error, see above')
-         }
-         );
+            assertEquals(err.message, 'Should not throw error, see above');
+         });
    },
 );
 
@@ -570,7 +574,10 @@ Deno.test('Login throws error if matching PlayerAccount is not available', async
 
    game.login('doesnotexists', 'doesnotmatter')
       .then((loggedInPlayer) =>
-         assertEquals(loggedInPlayer.name, 'Should not resolve and throw error, see below')
+         assertEquals(
+            loggedInPlayer.name,
+            'Should not resolve and throw error, see below',
+         )
       )
       .catch((err) =>
          assertEquals(err.message, 'Login failed! Invalid credentials')
@@ -624,7 +631,10 @@ Deno.test('Login throws error if password is wrong', async () => {
 
    game.login('tp', 'wrongPassword')
       .then((loggedInPlayer) =>
-         assertEquals(loggedInPlayer.name, 'Should not resolve and throw error, see below')
+         assertEquals(
+            loggedInPlayer.name,
+            'Should not resolve and throw error, see below',
+         )
       )
       .catch((err) =>
          assertEquals(err.message, 'Login failed! Invalid credentials')
@@ -674,7 +684,7 @@ function createNonTutorialBattle(
       const battle = game.getBattle(battleId, playerOneAccessToken);
       assert(battle);
       return { battleId, battle };
-   } 
+   }
    return { battleId: undefined, battle: undefined };
 }
 
@@ -695,22 +705,22 @@ Deno.test('An error is thrown if userName already exists and register is called'
    );
    assertEquals(newPlayerId, 'p1');
 
-   game.registerPlayer(playerOne,
-      'Another Player',
-      'tp',
-      '12345687',)
+   game.registerPlayer(playerOne, 'Another Player', 'tp', '12345687')
       .then((data) =>
          assertEquals(data, 'Should not resolve and throw error, see below')
       )
       .catch((err) =>
-         assertEquals(err.message, 'Cannot register user "tp", the username allready exists')
+         assertEquals(
+            err.message,
+            'Cannot register user "tp", the username allready exists',
+         )
       );
 });
 
 Deno.test(
    'An error is thrown if a non-tutorial battle is created and no ' +
       'playerOneAccessToken is provided',
-   async() => {
+   async () => {
       const game = new PlayerAgainstAIGame();
       const playerOne: GamePlayer = new GamePlayer({
          playerId: 'doesnotmatter',
@@ -733,28 +743,27 @@ Deno.test(
       });
       playerTwo.addUnit(slimeUnit);
       playerTwo.addUnit(parentSlimeUnit);
-      
 
-   assertThrows(
-      (): void => {
-         createNonTutorialBattle(
-            game,
-            newPlayerId,
-            undefined,
-            playerTwo,
-            randomCounterAttackFunction,
-         )
-      },
-      Error,
-      'Access token needs to be provided in order to create a non-tutorial battle',
-   );
-});
-
+      assertThrows(
+         (): void => {
+            createNonTutorialBattle(
+               game,
+               newPlayerId,
+               undefined,
+               playerTwo,
+               randomCounterAttackFunction,
+            );
+         },
+         Error,
+         'Access token needs to be provided in order to create a non-tutorial battle',
+      );
+   },
+);
 
 Deno.test(
    'An error is thrown if a non-tutorial battle is created and no ' +
       'playerOneId is provided',
-   async() => {
+   async () => {
       const game = new PlayerAgainstAIGame();
       const playerOne: GamePlayer = new GamePlayer({
          playerId: 'doesnotmatter',
@@ -777,29 +786,27 @@ Deno.test(
       });
       playerTwo.addUnit(slimeUnit);
       playerTwo.addUnit(parentSlimeUnit);
-      
 
-   assertThrows(
-      (): void => {
-         createNonTutorialBattle(
-            game,
-            undefined,
-            'doesnotmatter',
-            playerTwo,
-            randomCounterAttackFunction,
-         )
-      },
-      Error,
-      'playerOneId needs to be provied to create non-tutorial battle.',
-   );
-});
-
-
+      assertThrows(
+         (): void => {
+            createNonTutorialBattle(
+               game,
+               undefined,
+               'doesnotmatter',
+               playerTwo,
+               randomCounterAttackFunction,
+            );
+         },
+         Error,
+         'playerOneId needs to be provied to create non-tutorial battle.',
+      );
+   },
+);
 
 Deno.test(
    'An error is thrown if a non-tutorial battle is created and wrong ' +
       'playerOneAccessToken is provided',
-   async() => {
+   async () => {
       const game = new PlayerAgainstAIGame();
       const playerOne: GamePlayer = new GamePlayer({
          playerId: 'doesnotmatter',
@@ -824,19 +831,20 @@ Deno.test(
       playerTwo.addUnit(parentSlimeUnit);
 
       //Login so playerOne would have accessToken available
-      await game.login('tp', '12345')
-      
-   assertThrows(
-      (): void => {
-         createNonTutorialBattle(
-            game,
-            newPlayerId,
-            'wrongToken',
-            playerTwo,
-            randomCounterAttackFunction,
-         )
-      },
-      Error,
-      'Non-tutorial battle cannot be created. Reason: Invalid credentials',
-   );
-});
+      await game.login('tp', '12345');
+
+      assertThrows(
+         (): void => {
+            createNonTutorialBattle(
+               game,
+               newPlayerId,
+               'wrongToken',
+               playerTwo,
+               randomCounterAttackFunction,
+            );
+         },
+         Error,
+         'Non-tutorial battle cannot be created. Reason: Invalid credentials',
+      );
+   },
+);
