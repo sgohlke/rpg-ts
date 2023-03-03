@@ -798,7 +798,7 @@ Deno.test(
             );
          },
          Error,
-         'playerOneId needs to be provied to create non-tutorial battle.',
+         'playerOneId needs to be provided to create non-tutorial battle.',
       );
    },
 );

@@ -111,7 +111,7 @@ export class PlayerAgainstAIGame {
             );
          } else if (!playerOneId) {
             throw new Error(
-               'playerOneId needs to be provied to create non-tutorial battle.',
+               'playerOneId needs to be provided to create non-tutorial battle.',
             );
          } else if (
             !this.isAuthorizedPlayer(playerOneId, playerOneAccessToken)
@@ -262,7 +262,6 @@ export class PlayerAgainstAIGame {
       if (!knownAccessTokenForPlayer) {
          throw new Error(`Did not find access token for player ${playerId}`);
       }
-
       return knownAccessTokenForPlayer === providedAccessToken;
    }
 }
