@@ -4,20 +4,20 @@ import {
    randomCounterAttackFunction,
    Unit,
    UnitInBattle,
-} from '../index.ts';
+} from '../index.ts'
 
 export class PlayerInBattle extends GamePlayer {
-   private unitsInBattle: Array<UnitInBattle> = [];
-   counterAttackFunction?: CounterAttackFunction;
+   private unitsInBattle: Array<UnitInBattle> = []
+   counterAttackFunction?: CounterAttackFunction
 
    constructor(
       player: GamePlayer,
       counterAttackFunction = randomCounterAttackFunction,
    ) {
-      super(player);
-      this.counterAttackFunction = counterAttackFunction;
+      super(player)
+      this.counterAttackFunction = counterAttackFunction
       //FIXME: Also initialize units, not only unitsInBattle
-      this.initUnitsInBattle(player.getUnits());
+      this.initUnitsInBattle(player.getUnits())
    }
 
    initUnitsInBattle(units: ReadonlyArray<Unit>): void {
@@ -35,35 +35,33 @@ export class PlayerInBattle extends GamePlayer {
                atk: unit.defaultStatus.atk,
                def: unit.defaultStatus.def,
             },
-         });
+         })
       }
    }
 
    getUnitInBattle(joinNumber: number): UnitInBattle | undefined {
-      return this.unitsInBattle.find((entry) =>
-         entry.joinNumber === joinNumber
-      );
+      return this.unitsInBattle.find((entry) => entry.joinNumber === joinNumber)
    }
 
    isDefeated(): boolean {
-      return !this.unitsInBattle.some((entry) => entry.inBattleStatus.hp > 0);
+      return !this.unitsInBattle.some((entry) => entry.inBattleStatus.hp > 0)
    }
 
    getNonDefeatedUnits(): Array<UnitInBattle> {
-      return this.unitsInBattle.filter((entry) => entry.inBattleStatus.hp > 0);
+      return this.unitsInBattle.filter((entry) => entry.inBattleStatus.hp > 0)
    }
 
    findRandomNonDefeatedUnit(): UnitInBattle | undefined {
-      const nonDefeatedUnits = this.getNonDefeatedUnits();
+      const nonDefeatedUnits = this.getNonDefeatedUnits()
       if (nonDefeatedUnits && nonDefeatedUnits.length > 0) {
          return nonDefeatedUnits[
             Math.floor(Math.random() * nonDefeatedUnits.length)
-         ];
+         ]
       }
-      return undefined;
+      return undefined
    }
 
    getNumberOfUnitsInBattle(): number {
-      return this.unitsInBattle.length;
+      return this.unitsInBattle.length
    }
 }

@@ -1,7 +1,7 @@
-import { InBattleStatus, Unit } from '../index.ts';
+import { InBattleStatus, Unit } from '../index.ts'
 
 export interface UnitInBattle extends Unit {
-   inBattleStatus: InBattleStatus;
+   inBattleStatus: InBattleStatus
 }
 
 export function calculateDamage(
@@ -9,9 +9,9 @@ export function calculateDamage(
    defenderUnit: UnitInBattle,
 ): number {
    let damage = attackerUnit.inBattleStatus.atk -
-      defenderUnit.inBattleStatus.def;
+      defenderUnit.inBattleStatus.def
    if (damage < 1) {
-      damage = 1;
+      damage = 1
    }
-   return damage;
+   return damage
 }

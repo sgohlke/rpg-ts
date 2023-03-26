@@ -1,4 +1,4 @@
-import { Unit } from '../../index.ts';
+import { Unit } from '../../index.ts'
 
 export const DEFAULT_UNITS = new Map<string, Unit>([
    ['1', {
@@ -21,12 +21,12 @@ export const DEFAULT_UNITS = new Map<string, Unit>([
       name: 'IamALooser',
       defaultStatus: { hp: 0, atk: 1, def: 1 },
    }],
-]);
+])
 
 export function getDefaultUnit(unitId: string): Unit {
    return DEFAULT_UNITS.get(unitId) ||
       {
          name: 'Broken',
          defaultStatus: { hp: 1, atk: 1, def: 1 },
-      };
+      }
 }

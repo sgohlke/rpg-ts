@@ -9,509 +9,509 @@ import {
    noCounterAttackFunction,
    PlayerAgainstAIGame,
    randomCounterAttackFunction,
-} from '../index.ts';
+} from '../index.ts'
 
-const slimeUnit = getDefaultUnit('1');
-const parentSlimeUnit = getDefaultUnit('2');
-const unitDefender = getDefaultUnit('3');
-const punchbagUnit = getDefaultUnit('4');
-const looserUnit = getDefaultUnit('5');
+const slimeUnit = getDefaultUnit('1')
+const parentSlimeUnit = getDefaultUnit('2')
+const unitDefender = getDefaultUnit('3')
+const punchbagUnit = getDefaultUnit('4')
+const looserUnit = getDefaultUnit('5')
 
 Deno.test('Player is correctly created and added to Player list', () => {
-   const game = new PlayerAgainstAIGame();
+   const game = new PlayerAgainstAIGame()
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'doesnotmatter',
       name: 'Test Player',
-   });
-   playerOne.addUnit(slimeUnit);
-   playerOne.addUnit(parentSlimeUnit);
+   })
+   playerOne.addUnit(slimeUnit)
+   playerOne.addUnit(parentSlimeUnit)
 
-   const newPlayerId = game.createPlayer(playerOne);
-   assertEquals(newPlayerId, 'p1');
+   const newPlayerId = game.createPlayer(playerOne)
+   assertEquals(newPlayerId, 'p1')
 
-   const newPlayer = game.getPlayer(newPlayerId);
-   assert(newPlayer);
-   assertEquals(newPlayer.playerId, newPlayerId);
-   assertEquals(newPlayer.name, 'Test Player');
+   const newPlayer = game.getPlayer(newPlayerId)
+   assert(newPlayer)
+   assertEquals(newPlayer.playerId, newPlayerId)
+   assertEquals(newPlayer.name, 'Test Player')
    assertEquals(newPlayer.getUnit(1), {
       name: slimeUnit.name,
       defaultStatus: slimeUnit.defaultStatus,
       joinNumber: 1,
-   });
+   })
    assertEquals(newPlayer.getUnit(2), {
       name: parentSlimeUnit.name,
       defaultStatus: parentSlimeUnit.defaultStatus,
       joinNumber: 2,
-   });
-});
+   })
+})
 
 Deno.test('Battle is correctly created and added to Battle list', () => {
-   const game = new PlayerAgainstAIGame();
+   const game = new PlayerAgainstAIGame()
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'doesnotmatter',
       name: 'Test Player',
-   });
-   playerOne.addUnit(slimeUnit);
-   playerOne.addUnit(parentSlimeUnit);
+   })
+   playerOne.addUnit(slimeUnit)
+   playerOne.addUnit(parentSlimeUnit)
 
    const playerTwo: GamePlayer = new GamePlayer({
       playerId: 'doesnotmatter',
       name: 'AI Player',
-   });
-   playerTwo.addUnit(slimeUnit);
-   playerTwo.addUnit(parentSlimeUnit);
+   })
+   playerTwo.addUnit(slimeUnit)
+   playerTwo.addUnit(parentSlimeUnit)
 
-   const { battleId, battle } = createBattle(game, playerOne, playerTwo);
-   const battleParticipants = battleId.substring(0, battleId.indexOf('_'));
+   const { battleId, battle } = createBattle(game, playerOne, playerTwo)
+   const battleParticipants = battleId.substring(0, battleId.indexOf('_'))
 
-   assertEquals(battleParticipants, 'p1-p2');
-   assert(battle);
-   assertEquals(battle.playerOne.playerId, 'p1');
-   assertEquals(battle.playerOne.name, 'Test Player');
-   assertEquals(battle.playerTwo.playerId, 'p2');
-   assertEquals(battle.playerTwo.name, 'AI Player');
-});
+   assertEquals(battleParticipants, 'p1-p2')
+   assert(battle)
+   assertEquals(battle.playerOne.playerId, 'p1')
+   assertEquals(battle.playerOne.name, 'Test Player')
+   assertEquals(battle.playerTwo.playerId, 'p2')
+   assertEquals(battle.playerTwo.name, 'AI Player')
+})
 
 Deno.test('Battle is not created and not added to Battle list if one player is not found in player list', () => {
-   const game = new PlayerAgainstAIGame();
+   const game = new PlayerAgainstAIGame()
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'doesnotmatter',
       name: 'Test Player',
-   });
-   playerOne.addUnit(slimeUnit);
-   playerOne.addUnit(parentSlimeUnit);
+   })
+   playerOne.addUnit(slimeUnit)
+   playerOne.addUnit(parentSlimeUnit)
 
-   const newPlayerOneId = game.createPlayer(playerOne);
-   assertEquals(newPlayerOneId, 'p1');
-   const newPlayerTwoId = 'pdoesnotexist';
-   const battleId = game.createBattle(newPlayerOneId, newPlayerTwoId);
-   assertEquals(battleId, undefined);
-});
+   const newPlayerOneId = game.createPlayer(playerOne)
+   assertEquals(newPlayerOneId, 'p1')
+   const newPlayerTwoId = 'pdoesnotexist'
+   const battleId = game.createBattle(newPlayerOneId, newPlayerTwoId)
+   assertEquals(battleId, undefined)
+})
 
 Deno.test('Attack in battle is performed correctly', () => {
    // Given
-   const game = new PlayerAgainstAIGame();
+   const game = new PlayerAgainstAIGame()
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'doesnotmatter',
       name: 'Test Player',
-   });
-   playerOne.addUnit(slimeUnit);
-   playerOne.addUnit(parentSlimeUnit);
+   })
+   playerOne.addUnit(slimeUnit)
+   playerOne.addUnit(parentSlimeUnit)
 
    const playerTwo: GamePlayer = new GamePlayer({
       playerId: 'doesnotmatter',
       name: 'AI Player',
-   });
-   playerTwo.addUnit(slimeUnit);
-   playerTwo.addUnit(parentSlimeUnit);
+   })
+   playerTwo.addUnit(slimeUnit)
+   playerTwo.addUnit(parentSlimeUnit)
 
-   const { battleId, battle } = createBattle(game, playerOne, playerTwo);
-   const initialEnemyHP = slimeUnit.defaultStatus.hp;
-   const playerTwoSlimeUnit = battle.playerTwo.getUnitInBattle(1);
-   assert(playerTwoSlimeUnit);
-   assertEquals(playerTwoSlimeUnit.defaultStatus.hp, initialEnemyHP);
+   const { battleId, battle } = createBattle(game, playerOne, playerTwo)
+   const initialEnemyHP = slimeUnit.defaultStatus.hp
+   const playerTwoSlimeUnit = battle.playerTwo.getUnitInBattle(1)
+   assert(playerTwoSlimeUnit)
+   assertEquals(playerTwoSlimeUnit.defaultStatus.hp, initialEnemyHP)
 
    // When
-   const battleAfterAttack = game.attack(battleId, 1, 1);
+   const battleAfterAttack = game.attack(battleId, 1, 1)
 
    // Then
-   assert(battleAfterAttack);
+   assert(battleAfterAttack)
 
-   const defendingUnitHPAfterAttack = playerTwoSlimeUnit.inBattleStatus.hp;
-   assertEquals(defendingUnitHPAfterAttack, initialEnemyHP - 1);
+   const defendingUnitHPAfterAttack = playerTwoSlimeUnit.inBattleStatus.hp
+   assertEquals(defendingUnitHPAfterAttack, initialEnemyHP - 1)
 
    // Assert that initial unit default hp did not change after attack in battle
-   const secondPlayer = game.getPlayer('p2');
-   assert(secondPlayer);
-   const defendingUnitDefaultHP = playerTwoSlimeUnit.defaultStatus.hp;
-   assertEquals(defendingUnitDefaultHP, playerTwoSlimeUnit.defaultStatus.hp);
-});
+   const secondPlayer = game.getPlayer('p2')
+   assert(secondPlayer)
+   const defendingUnitDefaultHP = playerTwoSlimeUnit.defaultStatus.hp
+   assertEquals(defendingUnitDefaultHP, playerTwoSlimeUnit.defaultStatus.hp)
+})
 
 Deno.test('GetBattle will throw error if not matching battle for battleId id found', () => {
    // Given
-   const game = new PlayerAgainstAIGame();
+   const game = new PlayerAgainstAIGame()
 
    // When/Then: Attack punchbag with 0 HP again, throws error
    assertThrows(
       (): void => {
-         game.attack('doesnotexist', 1, 1);
+         game.attack('doesnotexist', 1, 1)
       },
       Error,
       'Battle for battleId doesnotexist was not found!',
-   );
-});
+   )
+})
 
 Deno.test('Attack in battle is performed correctly and deals at least 1 HP as damage', () => {
    // Given
-   const game = new PlayerAgainstAIGame();
+   const game = new PlayerAgainstAIGame()
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'doesnotmatter',
       name: 'Test Player',
-   });
-   playerOne.addUnit(slimeUnit);
-   playerOne.addUnit(parentSlimeUnit);
+   })
+   playerOne.addUnit(slimeUnit)
+   playerOne.addUnit(parentSlimeUnit)
 
    const playerTwo: GamePlayer = new GamePlayer({
       playerId: 'doesnotmatter',
       name: 'AI Player',
-   });
-   playerTwo.addUnit(unitDefender);
-   playerTwo.addUnit(parentSlimeUnit);
+   })
+   playerTwo.addUnit(unitDefender)
+   playerTwo.addUnit(parentSlimeUnit)
 
-   const { battleId, battle } = createBattle(game, playerOne, playerTwo);
-   const initialEnemyHP = unitDefender.defaultStatus.hp;
-   const playerTwoDefenderUnit = battle.playerTwo.getUnitInBattle(1);
-   assert(playerTwoDefenderUnit);
-   assertEquals(playerTwoDefenderUnit.defaultStatus.hp, initialEnemyHP);
+   const { battleId, battle } = createBattle(game, playerOne, playerTwo)
+   const initialEnemyHP = unitDefender.defaultStatus.hp
+   const playerTwoDefenderUnit = battle.playerTwo.getUnitInBattle(1)
+   assert(playerTwoDefenderUnit)
+   assertEquals(playerTwoDefenderUnit.defaultStatus.hp, initialEnemyHP)
 
    // When
-   const battleAfterAttack = game.attack(battleId, 1, 1);
+   const battleAfterAttack = game.attack(battleId, 1, 1)
 
    // Then
-   assert(battleAfterAttack);
-   const defendingUnitHPAfterAttack = playerTwoDefenderUnit.inBattleStatus.hp;
-   assertEquals(defendingUnitHPAfterAttack, initialEnemyHP - 1);
+   assert(battleAfterAttack)
+   const defendingUnitHPAfterAttack = playerTwoDefenderUnit.inBattleStatus.hp
+   assertEquals(defendingUnitHPAfterAttack, initialEnemyHP - 1)
 
    // Assert that initial unit default hp did not change after attack in battle
-   const secondPlayer = game.getPlayer('p2');
-   assert(secondPlayer);
-   const defendingUnitDefaultHP = playerTwoDefenderUnit.defaultStatus.hp;
-   assertEquals(defendingUnitDefaultHP, playerTwoDefenderUnit.defaultStatus.hp);
-});
+   const secondPlayer = game.getPlayer('p2')
+   assert(secondPlayer)
+   const defendingUnitDefaultHP = playerTwoDefenderUnit.defaultStatus.hp
+   assertEquals(defendingUnitDefaultHP, playerTwoDefenderUnit.defaultStatus.hp)
+})
 
 Deno.test('Battle has ended and proper winner is determined if Player defeats AI', () => {
    // Given
-   const game = new PlayerAgainstAIGame();
+   const game = new PlayerAgainstAIGame()
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'p1',
       name: 'Test Player',
-   });
-   playerOne.addUnit(parentSlimeUnit);
+   })
+   playerOne.addUnit(parentSlimeUnit)
 
    const playerTwo: GamePlayer = new GamePlayer({
       playerId: 'p2',
       name: 'AI Player',
-   });
-   playerTwo.addUnit(slimeUnit);
-   playerTwo.addUnit(punchbagUnit);
+   })
+   playerTwo.addUnit(slimeUnit)
+   playerTwo.addUnit(punchbagUnit)
 
-   const { battleId } = createBattle(game, playerOne, playerTwo);
+   const { battleId } = createBattle(game, playerOne, playerTwo)
 
    // When: Attack once to defeat punchbag
-   const battleAfterPunchbagDefeated = game.attack(battleId, 1, 2);
-   assert(battleAfterPunchbagDefeated);
+   const battleAfterPunchbagDefeated = game.attack(battleId, 1, 2)
+   assert(battleAfterPunchbagDefeated)
 
    // Then: punchbag has 0 hp, but player two is not yet defeated, battle is still active and no winner has been determined
    const punchBagAfterBattle = battleAfterPunchbagDefeated.playerTwo
-      .getUnitInBattle(2);
-   assert(punchBagAfterBattle);
-   assertEquals(punchBagAfterBattle.inBattleStatus.hp, 0);
-   assertEquals(battleAfterPunchbagDefeated.playerTwo.isDefeated(), false);
-   assertEquals(battleAfterPunchbagDefeated.battleStatus, BattleStatus.ACTIVE);
-   assertEquals(battleAfterPunchbagDefeated.battleWinner, undefined);
+      .getUnitInBattle(2)
+   assert(punchBagAfterBattle)
+   assertEquals(punchBagAfterBattle.inBattleStatus.hp, 0)
+   assertEquals(battleAfterPunchbagDefeated.playerTwo.isDefeated(), false)
+   assertEquals(battleAfterPunchbagDefeated.battleStatus, BattleStatus.ACTIVE)
+   assertEquals(battleAfterPunchbagDefeated.battleWinner, undefined)
 
    // When: Attack enemy slime unit 4 times
    let battleAfterSlimeDefeated: Battle | undefined =
-      battleAfterPunchbagDefeated;
+      battleAfterPunchbagDefeated
    for (let index = 0; index < 4; index++) {
       const unitTwoCurrentHP =
          battleAfterPunchbagDefeated.playerOne.getUnitInBattle(1)
-            ?.inBattleStatus.hp;
-      assert(unitTwoCurrentHP);
-      battleAfterSlimeDefeated = game.attack(battleId, 1, 1);
+            ?.inBattleStatus.hp
+      assert(unitTwoCurrentHP)
+      battleAfterSlimeDefeated = game.attack(battleId, 1, 1)
       const counterAttackTarget = battleAfterSlimeDefeated?.counterAttackUnits
-         ?.counterTarget;
-      assert(counterAttackTarget);
-      assertEquals(counterAttackTarget.joinNumber, 1);
+         ?.counterTarget
+      assert(counterAttackTarget)
+      assertEquals(counterAttackTarget.joinNumber, 1)
       // Then: counter attack target should have one HP less than before
-      assertEquals(counterAttackTarget.inBattleStatus.hp, unitTwoCurrentHP - 1);
+      assertEquals(counterAttackTarget.inBattleStatus.hp, unitTwoCurrentHP - 1)
    }
 
    // Attack final time to defeat slime. No counterattack should be triggered
-   battleAfterSlimeDefeated = game.attack(battleId, 1, 1);
+   battleAfterSlimeDefeated = game.attack(battleId, 1, 1)
    const counterAttackTarget = battleAfterSlimeDefeated?.counterAttackUnits
-      ?.counterTarget;
-   assertEquals(counterAttackTarget, undefined);
+      ?.counterTarget
+   assertEquals(counterAttackTarget, undefined)
 
-   assert(battleAfterSlimeDefeated);
+   assert(battleAfterSlimeDefeated)
    // Then: slime has 0 hp, player two is defeated and battle has ended
    const slimeAfterBattle = battleAfterSlimeDefeated.playerTwo.getUnitInBattle(
       1,
-   );
-   assert(slimeAfterBattle);
-   assertEquals(slimeAfterBattle.inBattleStatus.hp, 0);
-   assertEquals(battleAfterSlimeDefeated.playerTwo.isDefeated(), true);
-   assertEquals(battleAfterSlimeDefeated.battleStatus, BattleStatus.ENDED);
+   )
+   assert(slimeAfterBattle)
+   assertEquals(slimeAfterBattle.inBattleStatus.hp, 0)
+   assertEquals(battleAfterSlimeDefeated.playerTwo.isDefeated(), true)
+   assertEquals(battleAfterSlimeDefeated.battleStatus, BattleStatus.ENDED)
    assertEquals(
       battleAfterSlimeDefeated.battleWinner,
       battleAfterSlimeDefeated.playerOne,
-   );
-});
+   )
+})
 
 Deno.test('Player cannot attack unit with 0 HP', () => {
    // Given
-   const game = new PlayerAgainstAIGame();
+   const game = new PlayerAgainstAIGame()
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'p1',
       name: 'Test Player',
-   });
-   playerOne.addUnit(slimeUnit);
+   })
+   playerOne.addUnit(slimeUnit)
    const playerTwo: GamePlayer = new GamePlayer({
       playerId: 'p2',
       name: 'AI Player',
-   });
-   playerTwo.addUnit(punchbagUnit);
-   playerTwo.addUnit(slimeUnit);
+   })
+   playerTwo.addUnit(punchbagUnit)
+   playerTwo.addUnit(slimeUnit)
 
-   const { battleId } = createBattle(game, playerOne, playerTwo);
+   const { battleId } = createBattle(game, playerOne, playerTwo)
 
    // When: Attack once to defeat punchbag
-   const battleAfterPunchbagDefeated = game.attack(battleId, 1, 1);
-   assert(battleAfterPunchbagDefeated);
+   const battleAfterPunchbagDefeated = game.attack(battleId, 1, 1)
+   assert(battleAfterPunchbagDefeated)
 
    // Then: punchbag has 0 hp, but player two is not yet defeated, battle is still active and no winner has been determined
    const punchBagAfterBattle = battleAfterPunchbagDefeated.playerTwo
-      .getUnitInBattle(1);
-   assert(punchBagAfterBattle);
-   assertEquals(punchBagAfterBattle.inBattleStatus.hp, 0);
+      .getUnitInBattle(1)
+   assert(punchBagAfterBattle)
+   assertEquals(punchBagAfterBattle.inBattleStatus.hp, 0)
 
    // When/Then: Attack punchbag with 0 HP again, throws error
    assertThrows(
       (): void => {
-         game.attack(battleId, 1, 1);
+         game.attack(battleId, 1, 1)
       },
       Error,
       'Cannot attack a unit that has already been defeated',
-   );
-});
+   )
+})
 
 Deno.test('Player cannot attack unit with 0 HP', () => {
    // Given
-   const game = new PlayerAgainstAIGame();
+   const game = new PlayerAgainstAIGame()
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'p1',
       name: 'Test Player',
-   });
-   playerOne.addUnit(looserUnit);
+   })
+   playerOne.addUnit(looserUnit)
 
    const playerTwo: GamePlayer = new GamePlayer({
       playerId: 'p2',
       name: 'AI Player',
-   });
-   playerTwo.addUnit(punchbagUnit);
+   })
+   playerTwo.addUnit(punchbagUnit)
 
-   const { battleId } = createBattle(game, playerOne, playerTwo);
+   const { battleId } = createBattle(game, playerOne, playerTwo)
 
    // When/Then: Attack punchbag with 0 HP again, throws error
    assertThrows(
       (): void => {
-         game.attack(battleId, 1, 1);
+         game.attack(battleId, 1, 1)
       },
       Error,
       'Cannot attack with a unit with 0 HP',
-   );
-});
+   )
+})
 
 Deno.test('Enemy player does not counterattack if NO_COUNTER_ATTACK strategy is used', () => {
    // Given
-   const game = new PlayerAgainstAIGame();
+   const game = new PlayerAgainstAIGame()
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'p1',
       name: 'Test Player',
-   });
-   playerOne.addUnit(slimeUnit);
+   })
+   playerOne.addUnit(slimeUnit)
 
    const playerTwo: GamePlayer = new GamePlayer({
       playerId: 'p2',
       name: 'AI Player',
-   });
-   playerTwo.addUnit(slimeUnit);
+   })
+   playerTwo.addUnit(slimeUnit)
 
    const { battleId } = createBattle(
       game,
       playerOne,
       playerTwo,
       noCounterAttackFunction,
-   );
+   )
 
-   const battle = game.attack(battleId, 1, 1);
-   const counterAttackTarget = battle?.counterAttackUnits?.counterTarget;
-   assertEquals(counterAttackTarget, undefined);
-});
+   const battle = game.attack(battleId, 1, 1)
+   const counterAttackTarget = battle?.counterAttackUnits?.counterTarget
+   assertEquals(counterAttackTarget, undefined)
+})
 
 Deno.test('Player looses battle against AI', () => {
    // Given
-   const game = new PlayerAgainstAIGame();
+   const game = new PlayerAgainstAIGame()
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'p1',
       name: 'Test Player',
-   });
-   playerOne.addUnit(punchbagUnit);
+   })
+   playerOne.addUnit(punchbagUnit)
 
    const playerTwo: GamePlayer = new GamePlayer({
       playerId: 'p2',
       name: 'AI Player',
-   });
-   playerTwo.addUnit(slimeUnit);
+   })
+   playerTwo.addUnit(slimeUnit)
 
    const { battleId } = createBattle(
       game,
       playerOne,
       playerTwo,
-   );
+   )
 
-   const battle = game.attack(battleId, 1, 1);
-   assert(battle);
-   assertEquals(battle.playerOne.isDefeated(), true);
-   assertEquals(battle.battleStatus, BattleStatus.ENDED);
+   const battle = game.attack(battleId, 1, 1)
+   assert(battle)
+   assertEquals(battle.playerOne.isDefeated(), true)
+   assertEquals(battle.battleStatus, BattleStatus.ENDED)
    assertEquals(
       battle.battleWinner,
       battle.playerTwo,
-   );
-});
+   )
+})
 
 Deno.test('Cannot attack in battle that has already ended', () => {
    // Given
-   const game = new PlayerAgainstAIGame();
+   const game = new PlayerAgainstAIGame()
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'p1',
       name: 'Test Player',
-   });
-   playerOne.addUnit(slimeUnit);
+   })
+   playerOne.addUnit(slimeUnit)
 
    const playerTwo: GamePlayer = new GamePlayer({
       playerId: 'p2',
       name: 'AI Player',
-   });
-   playerTwo.addUnit(punchbagUnit);
+   })
+   playerTwo.addUnit(punchbagUnit)
 
    const { battleId } = createBattle(
       game,
       playerOne,
       playerTwo,
-   );
+   )
 
-   const battle = game.attack(battleId, 1, 1);
-   assert(battle);
-   assertEquals(battle.playerTwo.isDefeated(), true);
-   assertEquals(battle.battleStatus, BattleStatus.ENDED);
+   const battle = game.attack(battleId, 1, 1)
+   assert(battle)
+   assertEquals(battle.playerTwo.isDefeated(), true)
+   assertEquals(battle.battleStatus, BattleStatus.ENDED)
    assertEquals(
       battle.battleWinner,
       battle.playerOne,
-   );
+   )
 
    // When/Then: Attack not possible if battle has ended, throws error
    assertThrows(
       (): void => {
-         game.attack(battleId, 1, 4);
+         game.attack(battleId, 1, 4)
       },
       Error,
       'Cannot attack in a battle that has already ended',
-   );
-});
+   )
+})
 
 Deno.test('Cannot attack if attacker or defender unit is not found', () => {
    // Given
-   const game = new PlayerAgainstAIGame();
+   const game = new PlayerAgainstAIGame()
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'p1',
       name: 'Test Player',
-   });
-   playerOne.addUnit(slimeUnit);
+   })
+   playerOne.addUnit(slimeUnit)
 
    const playerTwo: GamePlayer = new GamePlayer({
       playerId: 'p2',
       name: 'AI Player',
-   });
-   playerTwo.addUnit(punchbagUnit);
+   })
+   playerTwo.addUnit(punchbagUnit)
 
    const { battleId } = createBattle(
       game,
       playerOne,
       playerTwo,
-   );
+   )
 
    // When/Then: Attack not possible if attacker not found, throws error
    assertThrows(
       (): void => {
-         game.attack(battleId, 15, 4);
+         game.attack(battleId, 15, 4)
       },
       Error,
       'Cannot attack, did not find attacker unit with join number 15',
-   );
+   )
 
    // When/Then: Attack not possible if defender not found, throws error
    assertThrows(
       (): void => {
-         game.attack(battleId, 1, 27);
+         game.attack(battleId, 1, 27)
       },
       Error,
       'Cannot attack, did not find defender unit with join number 27',
-   );
-});
+   )
+})
 
 Deno.test('PlayerAccount is correctly created and added to PlayerAccount map', async () => {
-   const game = new PlayerAgainstAIGame();
+   const game = new PlayerAgainstAIGame()
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'doesnotmatter',
       name: 'Test Player',
-   });
-   playerOne.addUnit(slimeUnit);
-   playerOne.addUnit(parentSlimeUnit);
+   })
+   playerOne.addUnit(slimeUnit)
+   playerOne.addUnit(parentSlimeUnit)
 
    const newPlayerId = await game.registerPlayer(
       playerOne,
       'Test Player',
       'tp',
       '12345',
-   );
-   assertEquals(newPlayerId, 'p1');
+   )
+   assertEquals(newPlayerId, 'p1')
 
-   const playerAccount = game.getPlayerAccount(newPlayerId);
-   assert(playerAccount);
-   assertEquals(playerAccount.playerId, newPlayerId);
-   assertEquals(playerAccount.name, 'Test Player');
-   assertEquals(playerAccount.userName, 'tp');
+   const playerAccount = game.getPlayerAccount(newPlayerId)
+   assert(playerAccount)
+   assertEquals(playerAccount.playerId, newPlayerId)
+   assertEquals(playerAccount.name, 'Test Player')
+   assertEquals(playerAccount.userName, 'tp')
    assertEquals(
       playerAccount.userPassword,
       '5994471abb01112afcc18159f6cc74b4f511b99806da59b3caf5a9c173cacfc5',
-   );
-});
+   )
+})
 
 Deno.test(
    'Login is working if correct username and password are provided ' +
       'and a battle can be created and accessed for the registered player',
    async () => {
-      const game = new PlayerAgainstAIGame();
+      const game = new PlayerAgainstAIGame()
       const playerOne: GamePlayer = new GamePlayer({
          playerId: 'doesnotmatter',
          name: 'Test Player',
-      });
-      playerOne.addUnit(slimeUnit);
-      playerOne.addUnit(parentSlimeUnit);
+      })
+      playerOne.addUnit(slimeUnit)
+      playerOne.addUnit(parentSlimeUnit)
 
       const newPlayerId = await game.registerPlayer(
          playerOne,
          'Test Player',
          'tp',
          '12345',
-      );
-      assertEquals(newPlayerId, 'p1');
+      )
+      assertEquals(newPlayerId, 'p1')
 
       game.login('tp', '12345')
          .then((loggedInPlayer) => {
-            assert(loggedInPlayer);
-            assertEquals(loggedInPlayer.name, 'Test Player');
-            assertEquals(loggedInPlayer.userName, 'tp');
-            assertEquals(loggedInPlayer.playerId, 'p1');
-            assert(loggedInPlayer.accessToken);
+            assert(loggedInPlayer)
+            assertEquals(loggedInPlayer.name, 'Test Player')
+            assertEquals(loggedInPlayer.userName, 'tp')
+            assertEquals(loggedInPlayer.playerId, 'p1')
+            assert(loggedInPlayer.accessToken)
 
             const playerTwo: GamePlayer = new GamePlayer({
                playerId: 'doesnotmatter',
                name: 'AI Player',
-            });
-            playerTwo.addUnit(slimeUnit);
-            playerTwo.addUnit(parentSlimeUnit);
+            })
+            playerTwo.addUnit(slimeUnit)
+            playerTwo.addUnit(parentSlimeUnit)
 
             const { battleId, battle } = createNonTutorialBattle(
                game,
@@ -519,25 +519,25 @@ Deno.test(
                loggedInPlayer.accessToken,
                playerTwo,
                randomCounterAttackFunction,
-            );
-            assert(battle);
-            assertEquals(battle.isTutorialBattle, false);
+            )
+            assert(battle)
+            assertEquals(battle.isTutorialBattle, false)
 
             //When/Then: If accessToken is wrong, getBattle should return undefined
-            assert(battleId);
-            const battleWhenWrongToken = game.getBattle(battleId, 'wrongToken');
-            assert(!battleWhenWrongToken);
-            assert(battleId);
+            assert(battleId)
+            const battleWhenWrongToken = game.getBattle(battleId, 'wrongToken')
+            assert(!battleWhenWrongToken)
+            assert(battleId)
 
             // When/Then: Attacking without access token will return missing access token error
             assertThrows(
                (): void => {
-                  game.attack(battleId, 1, 1);
+                  game.attack(battleId, 1, 1)
                },
                Error,
                'Access token needs to be provided in order to get battle',
-            );
-            assert(battleId);
+            )
+            assert(battleId)
 
             // When: Attacking with accessToken
             const battleAfterAttack = game.attack(
@@ -545,32 +545,32 @@ Deno.test(
                1,
                1,
                loggedInPlayer.accessToken,
-            );
+            )
             // Then: Attack is successful, does not throw error
-            assert(battleAfterAttack);
+            assert(battleAfterAttack)
          })
          .catch((err) => {
-            assertEquals(err.message, 'Should not throw error, see above');
-         });
+            assertEquals(err.message, 'Should not throw error, see above')
+         })
    },
-);
+)
 
 Deno.test('Login throws error if matching PlayerAccount is not available', async () => {
-   const game = new PlayerAgainstAIGame();
+   const game = new PlayerAgainstAIGame()
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'doesnotmatter',
       name: 'Test Player',
-   });
-   playerOne.addUnit(slimeUnit);
-   playerOne.addUnit(parentSlimeUnit);
+   })
+   playerOne.addUnit(slimeUnit)
+   playerOne.addUnit(parentSlimeUnit)
 
    const newPlayerId = await game.registerPlayer(
       playerOne,
       'Test Player',
       'tp',
       '12345',
-   );
-   assertEquals(newPlayerId, 'p1');
+   )
+   assertEquals(newPlayerId, 'p1')
 
    game.login('doesnotexists', 'doesnotmatter')
       .then((loggedInPlayer) =>
@@ -581,53 +581,53 @@ Deno.test('Login throws error if matching PlayerAccount is not available', async
       )
       .catch((err) =>
          assertEquals(err.message, 'Login failed! Invalid credentials')
-      );
-});
+      )
+})
 
 Deno.test('isAuthorizedPlayer will throw error if not accessToken is provided', () => {
    // Given
-   const game = new PlayerAgainstAIGame();
+   const game = new PlayerAgainstAIGame()
 
    // When/Then: Attack punchbag with 0 HP again, throws error
    assertThrows(
       (): void => {
-         game.isAuthorizedPlayer('p1', '');
+         game.isAuthorizedPlayer('p1', '')
       },
       Error,
       'Access Token for player p1 has to be provided.',
-   );
-});
+   )
+})
 
 Deno.test('isAuthorizedPlayer will throw error if accessToken for player is not avaiable', () => {
    // Given
-   const game = new PlayerAgainstAIGame();
+   const game = new PlayerAgainstAIGame()
 
    // When/Then: Attack punchbag with 0 HP again, throws error
    assertThrows(
       (): void => {
-         game.isAuthorizedPlayer('p1', 'doesnotmatter');
+         game.isAuthorizedPlayer('p1', 'doesnotmatter')
       },
       Error,
       'Did not find access token for player p1',
-   );
-});
+   )
+})
 
 Deno.test('Login throws error if password is wrong', async () => {
-   const game = new PlayerAgainstAIGame();
+   const game = new PlayerAgainstAIGame()
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'doesnotmatter',
       name: 'Test Player',
-   });
-   playerOne.addUnit(slimeUnit);
-   playerOne.addUnit(parentSlimeUnit);
+   })
+   playerOne.addUnit(slimeUnit)
+   playerOne.addUnit(parentSlimeUnit)
 
    const newPlayerId = await game.registerPlayer(
       playerOne,
       'Test Player',
       'tp',
       '12345',
-   );
-   assertEquals(newPlayerId, 'p1');
+   )
+   assertEquals(newPlayerId, 'p1')
 
    game.login('tp', 'wrongPassword')
       .then((loggedInPlayer) =>
@@ -638,8 +638,8 @@ Deno.test('Login throws error if password is wrong', async () => {
       )
       .catch((err) =>
          assertEquals(err.message, 'Login failed! Invalid credentials')
-      );
-});
+      )
+})
 
 function createBattle(
    game: PlayerAgainstAIGame,
@@ -647,20 +647,20 @@ function createBattle(
    playerTwo: GamePlayer,
    playerTwoCounterAttackStrategy = randomCounterAttackFunction,
 ): { battleId: string; battle: Battle } {
-   const newPlayerOneId = game.createPlayer(playerOne);
-   assertEquals(newPlayerOneId, 'p1');
-   const newPlayerTwoId = game.createPlayer(playerTwo);
-   assertEquals(newPlayerTwoId, 'p2');
+   const newPlayerOneId = game.createPlayer(playerOne)
+   assertEquals(newPlayerOneId, 'p1')
+   const newPlayerTwoId = game.createPlayer(playerTwo)
+   assertEquals(newPlayerTwoId, 'p2')
    const battleId = game.createBattle(
       newPlayerOneId,
       newPlayerTwoId,
       playerTwoCounterAttackStrategy,
-   );
-   assert(battleId);
+   )
+   assert(battleId)
 
-   const battle = game.getBattle(battleId);
-   assert(battle);
-   return { battleId, battle };
+   const battle = game.getBattle(battleId)
+   assert(battle)
+   return { battleId, battle }
 }
 
 function createNonTutorialBattle(
@@ -670,40 +670,40 @@ function createNonTutorialBattle(
    playerTwo: GamePlayer,
    playerTwoCounterAttackStrategy = randomCounterAttackFunction,
 ): { battleId: string | undefined; battle: Battle | undefined } {
-   const newPlayerTwoId = game.createPlayer(playerTwo);
-   assert(newPlayerTwoId);
+   const newPlayerTwoId = game.createPlayer(playerTwo)
+   assert(newPlayerTwoId)
    const battleId = game.createBattle(
       playerOneId,
       newPlayerTwoId,
       playerTwoCounterAttackStrategy,
       false,
       playerOneAccessToken,
-   );
+   )
 
    if (battleId) {
-      const battle = game.getBattle(battleId, playerOneAccessToken);
-      assert(battle);
-      return { battleId, battle };
+      const battle = game.getBattle(battleId, playerOneAccessToken)
+      assert(battle)
+      return { battleId, battle }
    }
-   return { battleId: undefined, battle: undefined };
+   return { battleId: undefined, battle: undefined }
 }
 
 Deno.test('An error is thrown if userName already exists and register is called', async () => {
-   const game = new PlayerAgainstAIGame();
+   const game = new PlayerAgainstAIGame()
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'doesnotmatter',
       name: 'Test Player',
-   });
-   playerOne.addUnit(slimeUnit);
-   playerOne.addUnit(parentSlimeUnit);
+   })
+   playerOne.addUnit(slimeUnit)
+   playerOne.addUnit(parentSlimeUnit)
 
    const newPlayerId = await game.registerPlayer(
       playerOne,
       'Test Player',
       'tp',
       '12345',
-   );
-   assertEquals(newPlayerId, 'p1');
+   )
+   assertEquals(newPlayerId, 'p1')
 
    game.registerPlayer(playerOne, 'Another Player', 'tp', '12345687')
       .then((data) =>
@@ -714,35 +714,35 @@ Deno.test('An error is thrown if userName already exists and register is called'
             err.message,
             'Cannot register user "tp", the username allready exists',
          )
-      );
-});
+      )
+})
 
 Deno.test(
    'An error is thrown if a non-tutorial battle is created and no ' +
       'playerOneAccessToken is provided',
    async () => {
-      const game = new PlayerAgainstAIGame();
+      const game = new PlayerAgainstAIGame()
       const playerOne: GamePlayer = new GamePlayer({
          playerId: 'doesnotmatter',
          name: 'Test Player',
-      });
-      playerOne.addUnit(slimeUnit);
-      playerOne.addUnit(parentSlimeUnit);
+      })
+      playerOne.addUnit(slimeUnit)
+      playerOne.addUnit(parentSlimeUnit)
 
       const newPlayerId = await game.registerPlayer(
          playerOne,
          'Test Player',
          'tp',
          '12345',
-      );
-      assertEquals(newPlayerId, 'p1');
+      )
+      assertEquals(newPlayerId, 'p1')
 
       const playerTwo: GamePlayer = new GamePlayer({
          playerId: 'doesnotmatter',
          name: 'AI Player',
-      });
-      playerTwo.addUnit(slimeUnit);
-      playerTwo.addUnit(parentSlimeUnit);
+      })
+      playerTwo.addUnit(slimeUnit)
+      playerTwo.addUnit(parentSlimeUnit)
 
       assertThrows(
          (): void => {
@@ -752,40 +752,40 @@ Deno.test(
                undefined,
                playerTwo,
                randomCounterAttackFunction,
-            );
+            )
          },
          Error,
          'Access token needs to be provided in order to create a non-tutorial battle',
-      );
+      )
    },
-);
+)
 
 Deno.test(
    'An error is thrown if a non-tutorial battle is created and no ' +
       'playerOneId is provided',
    async () => {
-      const game = new PlayerAgainstAIGame();
+      const game = new PlayerAgainstAIGame()
       const playerOne: GamePlayer = new GamePlayer({
          playerId: 'doesnotmatter',
          name: 'Test Player',
-      });
-      playerOne.addUnit(slimeUnit);
-      playerOne.addUnit(parentSlimeUnit);
+      })
+      playerOne.addUnit(slimeUnit)
+      playerOne.addUnit(parentSlimeUnit)
 
       const newPlayerId = await game.registerPlayer(
          playerOne,
          'Test Player',
          'tp',
          '12345',
-      );
-      assertEquals(newPlayerId, 'p1');
+      )
+      assertEquals(newPlayerId, 'p1')
 
       const playerTwo: GamePlayer = new GamePlayer({
          playerId: 'doesnotmatter',
          name: 'AI Player',
-      });
-      playerTwo.addUnit(slimeUnit);
-      playerTwo.addUnit(parentSlimeUnit);
+      })
+      playerTwo.addUnit(slimeUnit)
+      playerTwo.addUnit(parentSlimeUnit)
 
       assertThrows(
          (): void => {
@@ -795,43 +795,43 @@ Deno.test(
                'doesnotmatter',
                playerTwo,
                randomCounterAttackFunction,
-            );
+            )
          },
          Error,
          'playerOneId needs to be provided to create non-tutorial battle.',
-      );
+      )
    },
-);
+)
 
 Deno.test(
    'An error is thrown if a non-tutorial battle is created and wrong ' +
       'playerOneAccessToken is provided',
    async () => {
-      const game = new PlayerAgainstAIGame();
+      const game = new PlayerAgainstAIGame()
       const playerOne: GamePlayer = new GamePlayer({
          playerId: 'doesnotmatter',
          name: 'Test Player',
-      });
-      playerOne.addUnit(slimeUnit);
-      playerOne.addUnit(parentSlimeUnit);
+      })
+      playerOne.addUnit(slimeUnit)
+      playerOne.addUnit(parentSlimeUnit)
 
       const newPlayerId = await game.registerPlayer(
          playerOne,
          'Test Player',
          'tp',
          '12345',
-      );
-      assertEquals(newPlayerId, 'p1');
+      )
+      assertEquals(newPlayerId, 'p1')
 
       const playerTwo: GamePlayer = new GamePlayer({
          playerId: 'doesnotmatter',
          name: 'AI Player',
-      });
-      playerTwo.addUnit(slimeUnit);
-      playerTwo.addUnit(parentSlimeUnit);
+      })
+      playerTwo.addUnit(slimeUnit)
+      playerTwo.addUnit(parentSlimeUnit)
 
       //Login so playerOne would have accessToken available
-      await game.login('tp', '12345');
+      await game.login('tp', '12345')
 
       assertThrows(
          (): void => {
@@ -841,10 +841,10 @@ Deno.test(
                'wrongToken',
                playerTwo,
                randomCounterAttackFunction,
-            );
+            )
          },
          Error,
          'Non-tutorial battle cannot be created. Reason: Invalid credentials',
-      );
+      )
    },
-);
+)

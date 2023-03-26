@@ -1,6 +1,6 @@
-import { UnitInBattle } from '../index.ts';
+import { UnitInBattle } from '../index.ts'
 
 export interface CounterAttackUnits {
-   counterAttacker: UnitInBattle | undefined;
-   counterTarget: UnitInBattle | undefined;
+   counterAttacker: UnitInBattle | undefined
+   counterTarget: UnitInBattle | undefined
 }

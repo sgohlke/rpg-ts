@@ -1,7 +1,7 @@
 {
    "tasks": {
       "coverage": "deno test --coverage=covresults && deno coverage covresults",
-      "format": "deno fmt --options-indent-width=3 --options-single-quote",
+      "format": "deno fmt --options-indent-width=3 --options-single-quote --options-no-semicolons",
       "lint": "deno lint",
       "test": "deno test"
    }
