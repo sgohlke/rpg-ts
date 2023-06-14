@@ -28,4 +28,3 @@ Code is formated using buildin **deno fmt** with the following options:
 To collect code coverage from tests execute **deno test --coverage=covresults**
 to create coverage results in covresults folder. Results can then be displayed
 in pretty format calling **deno coverage covresults**.
-test
