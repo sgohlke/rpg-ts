@@ -1,6 +1,8 @@
 import {
    assert,
-   assertEquals,
+   assertEquals
+} from '../deps.ts'
+import {
    GamePlayer,
    getDefaultUnit,
    InBattleStatus,

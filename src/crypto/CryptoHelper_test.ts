@@ -1,7 +1,9 @@
 import {
-   arrayBufferToHexString,
    assert,
-   assertEquals,
+   assertEquals
+} from '../deps.ts'
+import {
+   arrayBufferToHexString,
    createPasswordHash,
    generateAccessTokenHash,
    verifyPassword,

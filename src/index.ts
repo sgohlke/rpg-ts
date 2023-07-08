@@ -1,4 +1,3 @@
-export * from './deps.ts'
 export * from './battle/Battle.ts'
 export * from './battle/BattleStatus.ts'
 export * from './crypto/CryptoHelper.ts'

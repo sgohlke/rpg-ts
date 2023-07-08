@@ -1,4 +1,7 @@
-import { assertEquals, getDefaultUnit } from '../../index.ts'
+import {
+   assertEquals
+} from '../../deps.ts'
+import { getDefaultUnit } from '../../index.ts'
 
 Deno.test('getDefaultUnit returns broken unit if no unitId is not found', () => {
    const unit = getDefaultUnit('122')

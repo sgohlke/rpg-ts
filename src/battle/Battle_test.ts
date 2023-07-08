@@ -1,5 +1,7 @@
 import {
-   assertEquals,
+   assertEquals
+} from '../deps.ts'
+import {
    Battle,
    BattleStatus,
    GamePlayer,

@@ -1,4 +1,7 @@
-import { assertEquals, Unit } from '../index.ts'
+import {
+   assertEquals
+} from '../deps.ts'
+import { Unit } from '../index.ts'
 
 Deno.test('Unit is correctly created', () => {
    const unit: Unit = {
