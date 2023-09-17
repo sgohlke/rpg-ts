@@ -6,18 +6,19 @@ import {
    GamePlayer,
    generateAccessTokenHash,
    LoggedInPlayer,
-   PlayerAccount,
+   PlayerDataStore,
    PlayerInBattle,
    randomCounterAttackFunction,
    verifyPassword,
 } from '../index.ts'
 
 export class PlayerAgainstAIGame {
-   private nextPlayerId = 1
-   private players: Array<GamePlayer> = []
    private battles: Array<Battle> = []
-   private playerAccounts: Array<PlayerAccount> = []
-   private playerAccessTokens: Map<string, string> = new Map<string, string>()
+   private playerDataStore: PlayerDataStore
+
+   constructor(playerDataStore: PlayerDataStore) {
+      this.playerDataStore = playerDataStore
+   }
 
    async registerPlayer(
       player: GamePlayer,
@@ -25,16 +26,16 @@ export class PlayerAgainstAIGame {
       userName: string,
       password: string,
    ): Promise<string> {
-      const playerExists = this.doesPlayerExist(userName)
+      const playerExists = this.playerDataStore.doesPlayerExist(userName)
       if (playerExists) {
          throw new Error(
-            `Cannot register user "${userName}", the username allready exists`,
+            `Cannot register user "${userName}", the username already exists`,
          )
       }
 
-      const playerId = this.createPlayer(player)
+      const playerId = this.playerDataStore.createPlayer(player)
       const hashedPassword = await createPasswordHash(password)
-      this.playerAccounts.push({
+      this.playerDataStore.addPlayerAccount({
          playerId: playerId,
          name: name,
          userName: userName,
@@ -43,32 +44,12 @@ export class PlayerAgainstAIGame {
       return playerId
    }
 
-   doesPlayerExist(userName: string): boolean {
-      return this.playerAccounts.some((entry) => entry.userName === userName)
-   }
-
-   getPlayerAccount(playerId: string): PlayerAccount | undefined {
-      return this.playerAccounts.find((entry) => entry.playerId === playerId)
-   }
-
-   createPlayer(player: GamePlayer): string {
-      const newPlayerId = 'p' + this.nextPlayerId
-      player.playerId = newPlayerId
-      this.players.push(player)
-      this.nextPlayerId++
-      return newPlayerId
-   }
-
-   getPlayer(playerId: string | undefined): GamePlayer | undefined {
-      return this.players.find((entry) => entry.playerId === playerId)
-   }
-
    async login(
       userName: string,
       userPassword: string,
    ): Promise<LoggedInPlayer> {
-      const playerAccount = this.playerAccounts.find((entry) =>
-         entry.userName === userName
+      const playerAccount = this.playerDataStore.getPlayerAccountForName(
+         userName,
       )
       if (!playerAccount) {
          throw new Error('Login failed! Invalid credentials')
@@ -80,7 +61,10 @@ export class PlayerAgainstAIGame {
          if (verificationSuccessful) {
             // Generate accessToken
             const accessToken = generateAccessTokenHash()
-            this.playerAccessTokens.set(playerAccount.playerId, accessToken)
+            this.playerDataStore.setPlayerAccessToken(
+               playerAccount.playerId,
+               accessToken,
+            )
             return {
                playerId: playerAccount.playerId,
                userName: playerAccount.userName,
@@ -91,10 +75,6 @@ export class PlayerAgainstAIGame {
             throw new Error('Login failed! Invalid credentials')
          }
       }
-   }
-
-   getAccessTokenForPlayer(playerId: string): string | undefined {
-      return this.playerAccessTokens.get(playerId)
    }
 
    createBattle(
@@ -123,8 +103,8 @@ export class PlayerAgainstAIGame {
       }
 
       const battleId = this.createBattleId(playerOneId, playerTwoId)
-      const playerOne = this.getPlayer(playerOneId)
-      const playerTwo = this.getPlayer(playerTwoId)
+      const playerOne = this.playerDataStore.getPlayer(playerOneId)
+      const playerTwo = this.playerDataStore.getPlayer(playerTwoId)
       if (playerOne && playerTwo) {
          this.battles.push({
             battleId,
@@ -258,7 +238,8 @@ export class PlayerAgainstAIGame {
             `Access Token for player ${playerId} has to be provided.`,
          )
       }
-      const knownAccessTokenForPlayer = this.getAccessTokenForPlayer(playerId)
+      const knownAccessTokenForPlayer = this.playerDataStore
+         .getAccessTokenForPlayer(playerId)
       if (!knownAccessTokenForPlayer) {
          throw new Error(`Did not find access token for player ${playerId}`)
       }

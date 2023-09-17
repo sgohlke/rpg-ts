@@ -1,11 +1,5 @@
-import {
-   assert,
-   assertEquals
-} from '../deps.ts'
-import { 
-   GamePlayer, 
-   getDefaultUnit 
-} from '../index.ts'
+import { assert, assertEquals } from '../deps.ts'
+import { GamePlayer, getDefaultUnit } from '../index.ts'
 
 Deno.test('GamePlayer is correctly created', () => {
    const player: GamePlayer = new GamePlayer({

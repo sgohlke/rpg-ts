@@ -1,14 +1,11 @@
-import {
-   assert,
-   assertEquals,
-   assertThrows
-} from '../deps.ts'
+import { assert, assertEquals, assertThrows } from '../deps.ts'
 
 import {
    Battle,
    BattleStatus,
    GamePlayer,
    getDefaultUnit,
+   InMemoryPlayerDataStore,
    noCounterAttackFunction,
    PlayerAgainstAIGame,
    randomCounterAttackFunction,
@@ -20,36 +17,9 @@ const unitDefender = getDefaultUnit('3')
 const punchbagUnit = getDefaultUnit('4')
 const looserUnit = getDefaultUnit('5')
 
-Deno.test('Player is correctly created and added to Player list', () => {
-   const game = new PlayerAgainstAIGame()
-   const playerOne: GamePlayer = new GamePlayer({
-      playerId: 'doesnotmatter',
-      name: 'Test Player',
-   })
-   playerOne.addUnit(slimeUnit)
-   playerOne.addUnit(parentSlimeUnit)
-
-   const newPlayerId = game.createPlayer(playerOne)
-   assertEquals(newPlayerId, 'p1')
-
-   const newPlayer = game.getPlayer(newPlayerId)
-   assert(newPlayer)
-   assertEquals(newPlayer.playerId, newPlayerId)
-   assertEquals(newPlayer.name, 'Test Player')
-   assertEquals(newPlayer.getUnit(1), {
-      name: slimeUnit.name,
-      defaultStatus: slimeUnit.defaultStatus,
-      joinNumber: 1,
-   })
-   assertEquals(newPlayer.getUnit(2), {
-      name: parentSlimeUnit.name,
-      defaultStatus: parentSlimeUnit.defaultStatus,
-      joinNumber: 2,
-   })
-})
-
 Deno.test('Battle is correctly created and added to Battle list', () => {
-   const game = new PlayerAgainstAIGame()
+   const playerDataStore = new InMemoryPlayerDataStore()
+   const game = new PlayerAgainstAIGame(playerDataStore)
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'doesnotmatter',
       name: 'Test Player',
@@ -64,7 +34,12 @@ Deno.test('Battle is correctly created and added to Battle list', () => {
    playerTwo.addUnit(slimeUnit)
    playerTwo.addUnit(parentSlimeUnit)
 
-   const { battleId, battle } = createBattle(game, playerOne, playerTwo)
+   const { battleId, battle } = createBattle(
+      playerDataStore,
+      game,
+      playerOne,
+      playerTwo,
+   )
    const battleParticipants = battleId.substring(0, battleId.indexOf('_'))
 
    assertEquals(battleParticipants, 'p1-p2')
@@ -76,16 +51,16 @@ Deno.test('Battle is correctly created and added to Battle list', () => {
 })
 
 Deno.test('Battle is not created and not added to Battle list if one player is not found in player list', () => {
-   const game = new PlayerAgainstAIGame()
+   const playerDataStore = new InMemoryPlayerDataStore()
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'doesnotmatter',
       name: 'Test Player',
    })
    playerOne.addUnit(slimeUnit)
    playerOne.addUnit(parentSlimeUnit)
-
-   const newPlayerOneId = game.createPlayer(playerOne)
+   const newPlayerOneId = playerDataStore.createPlayer(playerOne)
    assertEquals(newPlayerOneId, 'p1')
+   const game = new PlayerAgainstAIGame(playerDataStore)
    const newPlayerTwoId = 'pdoesnotexist'
    const battleId = game.createBattle(newPlayerOneId, newPlayerTwoId)
    assertEquals(battleId, undefined)
@@ -93,7 +68,8 @@ Deno.test('Battle is not created and not added to Battle list if one player is n
 
 Deno.test('Attack in battle is performed correctly', () => {
    // Given
-   const game = new PlayerAgainstAIGame()
+   const playerDataStore = new InMemoryPlayerDataStore()
+   const game = new PlayerAgainstAIGame(playerDataStore)
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'doesnotmatter',
       name: 'Test Player',
@@ -108,7 +84,12 @@ Deno.test('Attack in battle is performed correctly', () => {
    playerTwo.addUnit(slimeUnit)
    playerTwo.addUnit(parentSlimeUnit)
 
-   const { battleId, battle } = createBattle(game, playerOne, playerTwo)
+   const { battleId, battle } = createBattle(
+      playerDataStore,
+      game,
+      playerOne,
+      playerTwo,
+   )
    const initialEnemyHP = slimeUnit.defaultStatus.hp
    const playerTwoSlimeUnit = battle.playerTwo.getUnitInBattle(1)
    assert(playerTwoSlimeUnit)
@@ -124,7 +105,7 @@ Deno.test('Attack in battle is performed correctly', () => {
    assertEquals(defendingUnitHPAfterAttack, initialEnemyHP - 1)
 
    // Assert that initial unit default hp did not change after attack in battle
-   const secondPlayer = game.getPlayer('p2')
+   const secondPlayer = playerDataStore.getPlayer('p2')
    assert(secondPlayer)
    const defendingUnitDefaultHP = playerTwoSlimeUnit.defaultStatus.hp
    assertEquals(defendingUnitDefaultHP, playerTwoSlimeUnit.defaultStatus.hp)
@@ -132,7 +113,7 @@ Deno.test('Attack in battle is performed correctly', () => {
 
 Deno.test('GetBattle will throw error if not matching battle for battleId id found', () => {
    // Given
-   const game = new PlayerAgainstAIGame()
+   const game = new PlayerAgainstAIGame(new InMemoryPlayerDataStore())
 
    // When/Then: Attack punchbag with 0 HP again, throws error
    assertThrows(
@@ -146,7 +127,8 @@ Deno.test('GetBattle will throw error if not matching battle for battleId id fou
 
 Deno.test('Attack in battle is performed correctly and deals at least 1 HP as damage', () => {
    // Given
-   const game = new PlayerAgainstAIGame()
+   const playerDataStore = new InMemoryPlayerDataStore()
+   const game = new PlayerAgainstAIGame(playerDataStore)
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'doesnotmatter',
       name: 'Test Player',
@@ -161,7 +143,12 @@ Deno.test('Attack in battle is performed correctly and deals at least 1 HP as da
    playerTwo.addUnit(unitDefender)
    playerTwo.addUnit(parentSlimeUnit)
 
-   const { battleId, battle } = createBattle(game, playerOne, playerTwo)
+   const { battleId, battle } = createBattle(
+      playerDataStore,
+      game,
+      playerOne,
+      playerTwo,
+   )
    const initialEnemyHP = unitDefender.defaultStatus.hp
    const playerTwoDefenderUnit = battle.playerTwo.getUnitInBattle(1)
    assert(playerTwoDefenderUnit)
@@ -176,7 +163,7 @@ Deno.test('Attack in battle is performed correctly and deals at least 1 HP as da
    assertEquals(defendingUnitHPAfterAttack, initialEnemyHP - 1)
 
    // Assert that initial unit default hp did not change after attack in battle
-   const secondPlayer = game.getPlayer('p2')
+   const secondPlayer = playerDataStore.getPlayer('p2')
    assert(secondPlayer)
    const defendingUnitDefaultHP = playerTwoDefenderUnit.defaultStatus.hp
    assertEquals(defendingUnitDefaultHP, playerTwoDefenderUnit.defaultStatus.hp)
@@ -184,7 +171,8 @@ Deno.test('Attack in battle is performed correctly and deals at least 1 HP as da
 
 Deno.test('Battle has ended and proper winner is determined if Player defeats AI', () => {
    // Given
-   const game = new PlayerAgainstAIGame()
+   const playerDataStore = new InMemoryPlayerDataStore()
+   const game = new PlayerAgainstAIGame(playerDataStore)
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'p1',
       name: 'Test Player',
@@ -198,7 +186,12 @@ Deno.test('Battle has ended and proper winner is determined if Player defeats AI
    playerTwo.addUnit(slimeUnit)
    playerTwo.addUnit(punchbagUnit)
 
-   const { battleId } = createBattle(game, playerOne, playerTwo)
+   const { battleId } = createBattle(
+      playerDataStore,
+      game,
+      playerOne,
+      playerTwo,
+   )
 
    // When: Attack once to defeat punchbag
    const battleAfterPunchbagDefeated = game.attack(battleId, 1, 2)
@@ -217,9 +210,9 @@ Deno.test('Battle has ended and proper winner is determined if Player defeats AI
    let battleAfterSlimeDefeated: Battle | undefined =
       battleAfterPunchbagDefeated
    for (let index = 0; index < 4; index++) {
-      const unitTwoCurrentHP =
-         battleAfterPunchbagDefeated.playerOne.getUnitInBattle(1)
-            ?.inBattleStatus.hp
+      const unitTwoCurrentHP = battleAfterPunchbagDefeated.playerOne
+         .getUnitInBattle(1)
+         ?.inBattleStatus.hp
       assert(unitTwoCurrentHP)
       battleAfterSlimeDefeated = game.attack(battleId, 1, 1)
       const counterAttackTarget = battleAfterSlimeDefeated?.counterAttackUnits
@@ -253,7 +246,8 @@ Deno.test('Battle has ended and proper winner is determined if Player defeats AI
 
 Deno.test('Player cannot attack unit with 0 HP', () => {
    // Given
-   const game = new PlayerAgainstAIGame()
+   const playerDataStore = new InMemoryPlayerDataStore()
+   const game = new PlayerAgainstAIGame(playerDataStore)
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'p1',
       name: 'Test Player',
@@ -266,7 +260,12 @@ Deno.test('Player cannot attack unit with 0 HP', () => {
    playerTwo.addUnit(punchbagUnit)
    playerTwo.addUnit(slimeUnit)
 
-   const { battleId } = createBattle(game, playerOne, playerTwo)
+   const { battleId } = createBattle(
+      playerDataStore,
+      game,
+      playerOne,
+      playerTwo,
+   )
 
    // When: Attack once to defeat punchbag
    const battleAfterPunchbagDefeated = game.attack(battleId, 1, 1)
@@ -289,8 +288,9 @@ Deno.test('Player cannot attack unit with 0 HP', () => {
 })
 
 Deno.test('Player cannot attack unit with 0 HP', () => {
+   const playerDataStore = new InMemoryPlayerDataStore()
    // Given
-   const game = new PlayerAgainstAIGame()
+   const game = new PlayerAgainstAIGame(playerDataStore)
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'p1',
       name: 'Test Player',
@@ -303,7 +303,12 @@ Deno.test('Player cannot attack unit with 0 HP', () => {
    })
    playerTwo.addUnit(punchbagUnit)
 
-   const { battleId } = createBattle(game, playerOne, playerTwo)
+   const { battleId } = createBattle(
+      playerDataStore,
+      game,
+      playerOne,
+      playerTwo,
+   )
 
    // When/Then: Attack punchbag with 0 HP again, throws error
    assertThrows(
@@ -316,8 +321,9 @@ Deno.test('Player cannot attack unit with 0 HP', () => {
 })
 
 Deno.test('Enemy player does not counterattack if NO_COUNTER_ATTACK strategy is used', () => {
+   const playerDataStore = new InMemoryPlayerDataStore()
    // Given
-   const game = new PlayerAgainstAIGame()
+   const game = new PlayerAgainstAIGame(playerDataStore)
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'p1',
       name: 'Test Player',
@@ -331,6 +337,7 @@ Deno.test('Enemy player does not counterattack if NO_COUNTER_ATTACK strategy is 
    playerTwo.addUnit(slimeUnit)
 
    const { battleId } = createBattle(
+      playerDataStore,
       game,
       playerOne,
       playerTwo,
@@ -343,8 +350,9 @@ Deno.test('Enemy player does not counterattack if NO_COUNTER_ATTACK strategy is 
 })
 
 Deno.test('Player looses battle against AI', () => {
+   const playerDataStore = new InMemoryPlayerDataStore()
    // Given
-   const game = new PlayerAgainstAIGame()
+   const game = new PlayerAgainstAIGame(playerDataStore)
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'p1',
       name: 'Test Player',
@@ -358,6 +366,7 @@ Deno.test('Player looses battle against AI', () => {
    playerTwo.addUnit(slimeUnit)
 
    const { battleId } = createBattle(
+      playerDataStore,
       game,
       playerOne,
       playerTwo,
@@ -374,8 +383,9 @@ Deno.test('Player looses battle against AI', () => {
 })
 
 Deno.test('Cannot attack in battle that has already ended', () => {
+   const playerDataStore = new InMemoryPlayerDataStore()
    // Given
-   const game = new PlayerAgainstAIGame()
+   const game = new PlayerAgainstAIGame(playerDataStore)
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'p1',
       name: 'Test Player',
@@ -389,6 +399,7 @@ Deno.test('Cannot attack in battle that has already ended', () => {
    playerTwo.addUnit(punchbagUnit)
 
    const { battleId } = createBattle(
+      playerDataStore,
       game,
       playerOne,
       playerTwo,
@@ -414,8 +425,9 @@ Deno.test('Cannot attack in battle that has already ended', () => {
 })
 
 Deno.test('Cannot attack if attacker or defender unit is not found', () => {
+   const playerDataStore = new InMemoryPlayerDataStore()
    // Given
-   const game = new PlayerAgainstAIGame()
+   const game = new PlayerAgainstAIGame(playerDataStore)
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'p1',
       name: 'Test Player',
@@ -429,6 +441,7 @@ Deno.test('Cannot attack if attacker or defender unit is not found', () => {
    playerTwo.addUnit(punchbagUnit)
 
    const { battleId } = createBattle(
+      playerDataStore,
       game,
       playerOne,
       playerTwo,
@@ -454,7 +467,8 @@ Deno.test('Cannot attack if attacker or defender unit is not found', () => {
 })
 
 Deno.test('PlayerAccount is correctly created and added to PlayerAccount map', async () => {
-   const game = new PlayerAgainstAIGame()
+   const playerDataStore = new InMemoryPlayerDataStore()
+   const game = new PlayerAgainstAIGame(playerDataStore)
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'doesnotmatter',
       name: 'Test Player',
@@ -470,7 +484,7 @@ Deno.test('PlayerAccount is correctly created and added to PlayerAccount map', a
    )
    assertEquals(newPlayerId, 'p1')
 
-   const playerAccount = game.getPlayerAccount(newPlayerId)
+   const playerAccount = playerDataStore.getPlayerAccount(newPlayerId)
    assert(playerAccount)
    assertEquals(playerAccount.playerId, newPlayerId)
    assertEquals(playerAccount.name, 'Test Player')
@@ -485,7 +499,8 @@ Deno.test(
    'Login is working if correct username and password are provided ' +
       'and a battle can be created and accessed for the registered player',
    async () => {
-      const game = new PlayerAgainstAIGame()
+      const playerDataStore = new InMemoryPlayerDataStore()
+      const game = new PlayerAgainstAIGame(playerDataStore)
       const playerOne: GamePlayer = new GamePlayer({
          playerId: 'doesnotmatter',
          name: 'Test Player',
@@ -517,6 +532,7 @@ Deno.test(
             playerTwo.addUnit(parentSlimeUnit)
 
             const { battleId, battle } = createNonTutorialBattle(
+               playerDataStore,
                game,
                newPlayerId,
                loggedInPlayer.accessToken,
@@ -559,7 +575,7 @@ Deno.test(
 )
 
 Deno.test('Login throws error if matching PlayerAccount is not available', async () => {
-   const game = new PlayerAgainstAIGame()
+   const game = new PlayerAgainstAIGame(new InMemoryPlayerDataStore())
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'doesnotmatter',
       name: 'Test Player',
@@ -589,7 +605,7 @@ Deno.test('Login throws error if matching PlayerAccount is not available', async
 
 Deno.test('isAuthorizedPlayer will throw error if not accessToken is provided', () => {
    // Given
-   const game = new PlayerAgainstAIGame()
+   const game = new PlayerAgainstAIGame(new InMemoryPlayerDataStore())
 
    // When/Then: Attack punchbag with 0 HP again, throws error
    assertThrows(
@@ -601,9 +617,9 @@ Deno.test('isAuthorizedPlayer will throw error if not accessToken is provided', 
    )
 })
 
-Deno.test('isAuthorizedPlayer will throw error if accessToken for player is not avaiable', () => {
+Deno.test('isAuthorizedPlayer will throw error if accessToken for player is not available', () => {
    // Given
-   const game = new PlayerAgainstAIGame()
+   const game = new PlayerAgainstAIGame(new InMemoryPlayerDataStore())
 
    // When/Then: Attack punchbag with 0 HP again, throws error
    assertThrows(
@@ -616,7 +632,7 @@ Deno.test('isAuthorizedPlayer will throw error if accessToken for player is not 
 })
 
 Deno.test('Login throws error if password is wrong', async () => {
-   const game = new PlayerAgainstAIGame()
+   const game = new PlayerAgainstAIGame(new InMemoryPlayerDataStore())
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'doesnotmatter',
       name: 'Test Player',
@@ -645,14 +661,15 @@ Deno.test('Login throws error if password is wrong', async () => {
 })
 
 function createBattle(
+   playerDataStore: InMemoryPlayerDataStore,
    game: PlayerAgainstAIGame,
    playerOne: GamePlayer,
    playerTwo: GamePlayer,
    playerTwoCounterAttackStrategy = randomCounterAttackFunction,
 ): { battleId: string; battle: Battle } {
-   const newPlayerOneId = game.createPlayer(playerOne)
+   const newPlayerOneId = playerDataStore.createPlayer(playerOne)
    assertEquals(newPlayerOneId, 'p1')
-   const newPlayerTwoId = game.createPlayer(playerTwo)
+   const newPlayerTwoId = playerDataStore.createPlayer(playerTwo)
    assertEquals(newPlayerTwoId, 'p2')
    const battleId = game.createBattle(
       newPlayerOneId,
@@ -667,13 +684,14 @@ function createBattle(
 }
 
 function createNonTutorialBattle(
+   playerDataStore: InMemoryPlayerDataStore,
    game: PlayerAgainstAIGame,
    playerOneId: string | undefined,
    playerOneAccessToken: string | undefined,
    playerTwo: GamePlayer,
    playerTwoCounterAttackStrategy = randomCounterAttackFunction,
 ): { battleId: string | undefined; battle: Battle | undefined } {
-   const newPlayerTwoId = game.createPlayer(playerTwo)
+   const newPlayerTwoId = playerDataStore.createPlayer(playerTwo)
    assert(newPlayerTwoId)
    const battleId = game.createBattle(
       playerOneId,
@@ -692,7 +710,7 @@ function createNonTutorialBattle(
 }
 
 Deno.test('An error is thrown if userName already exists and register is called', async () => {
-   const game = new PlayerAgainstAIGame()
+   const game = new PlayerAgainstAIGame(new InMemoryPlayerDataStore())
    const playerOne: GamePlayer = new GamePlayer({
       playerId: 'doesnotmatter',
       name: 'Test Player',
@@ -715,7 +733,7 @@ Deno.test('An error is thrown if userName already exists and register is called'
       .catch((err) =>
          assertEquals(
             err.message,
-            'Cannot register user "tp", the username allready exists',
+            'Cannot register user "tp", the username already exists',
          )
       )
 })
@@ -724,7 +742,8 @@ Deno.test(
    'An error is thrown if a non-tutorial battle is created and no ' +
       'playerOneAccessToken is provided',
    async () => {
-      const game = new PlayerAgainstAIGame()
+      const playerDataStore = new InMemoryPlayerDataStore()
+      const game = new PlayerAgainstAIGame(playerDataStore)
       const playerOne: GamePlayer = new GamePlayer({
          playerId: 'doesnotmatter',
          name: 'Test Player',
@@ -750,6 +769,7 @@ Deno.test(
       assertThrows(
          (): void => {
             createNonTutorialBattle(
+               playerDataStore,
                game,
                newPlayerId,
                undefined,
@@ -767,7 +787,8 @@ Deno.test(
    'An error is thrown if a non-tutorial battle is created and no ' +
       'playerOneId is provided',
    async () => {
-      const game = new PlayerAgainstAIGame()
+      const playerDataStore = new InMemoryPlayerDataStore()
+      const game = new PlayerAgainstAIGame(playerDataStore)
       const playerOne: GamePlayer = new GamePlayer({
          playerId: 'doesnotmatter',
          name: 'Test Player',
@@ -793,6 +814,7 @@ Deno.test(
       assertThrows(
          (): void => {
             createNonTutorialBattle(
+               playerDataStore,
                game,
                undefined,
                'doesnotmatter',
@@ -810,7 +832,8 @@ Deno.test(
    'An error is thrown if a non-tutorial battle is created and wrong ' +
       'playerOneAccessToken is provided',
    async () => {
-      const game = new PlayerAgainstAIGame()
+      const playerDataStore = new InMemoryPlayerDataStore()
+      const game = new PlayerAgainstAIGame(playerDataStore)
       const playerOne: GamePlayer = new GamePlayer({
          playerId: 'doesnotmatter',
          name: 'Test Player',
@@ -839,6 +862,7 @@ Deno.test(
       assertThrows(
          (): void => {
             createNonTutorialBattle(
+               playerDataStore,
                game,
                newPlayerId,
                'wrongToken',
