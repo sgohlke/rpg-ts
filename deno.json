@@ -1,8 +1,8 @@
 {
    "tasks": {
-      "coverage": "deno test --coverage=covresults && deno coverage covresults",
+      "coverage": "deno test --trace-ops --coverage=covresults && deno coverage covresults",
       "format": "deno fmt --options-indent-width=3 --options-single-quote --options-no-semicolons",
       "lint": "deno lint",
-      "test": "deno test"
+      "test": "deno test --trace-ops"
    }
 }
