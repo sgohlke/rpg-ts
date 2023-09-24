@@ -590,17 +590,11 @@ Deno.test('Login throws error if matching PlayerAccount is not available', async
       '12345',
    )
    assertEquals(newPlayerId, 'p1')
-
-   game.login('doesnotexists', 'doesnotmatter')
-      .then((loggedInPlayer) =>
-         assertEquals(
-            loggedInPlayer.name,
-            'Should not resolve and throw error, see below',
-         )
-      )
-      .catch((err) =>
-         assertEquals(err.message, 'Login failed! Invalid credentials')
-      )
+   try {
+      await game.login('doesnotexists', 'doesnotmatter')
+   } catch (error) {
+      assertEquals(error.message, 'Login failed! Invalid credentials')
+   }
 })
 
 Deno.test('isAuthorizedPlayer will throw error if not accessToken is provided', () => {
@@ -647,17 +641,11 @@ Deno.test('Login throws error if password is wrong', async () => {
       '12345',
    )
    assertEquals(newPlayerId, 'p1')
-
-   game.login('tp', 'wrongPassword')
-      .then((loggedInPlayer) =>
-         assertEquals(
-            loggedInPlayer.name,
-            'Should not resolve and throw error, see below',
-         )
-      )
-      .catch((err) =>
-         assertEquals(err.message, 'Login failed! Invalid credentials')
-      )
+   try {
+      await game.login('tp', 'wrongPassword')
+   } catch (error) {
+      assertEquals(error.message, 'Login failed! Invalid credentials')
+   } 
 })
 
 function createBattle(
@@ -725,17 +713,14 @@ Deno.test('An error is thrown if userName already exists and register is called'
       '12345',
    )
    assertEquals(newPlayerId, 'p1')
-
-   game.registerPlayer(playerOne, 'Another Player', 'tp', '12345687')
-      .then((data) =>
-         assertEquals(data, 'Should not resolve and throw error, see below')
+   try {
+      await game.registerPlayer(playerOne, 'Another Player', 'tp', '12345687')
+   } catch (error) {
+      assertEquals(
+         error.message,
+         'Cannot register user "tp", the username already exists',
       )
-      .catch((err) =>
-         assertEquals(
-            err.message,
-            'Cannot register user "tp", the username already exists',
-         )
-      )
+   }
 })
 
 Deno.test(
