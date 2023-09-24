@@ -10,7 +10,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: denoland/setup-deno@v1
         with:
-          deno-version: '1.37.0'
+          deno-version: '1.36.2'
       - name: Cache https://
         uses: actions/cache@v3
         with:
