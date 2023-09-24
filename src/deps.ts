@@ -1,5 +1,11 @@
+export { assert } from 'https://deno.land/std@0.202.0/assert/assert.ts'
+
 export {
-   assert,
    assertEquals,
+} from 'https://deno.land/std@0.202.0/assert/assert_equals.ts'
+
+export {
    assertThrows,
-} from 'https://deno.land/std@0.199.0/testing/asserts.ts'
+} from 'https://deno.land/std@0.202.0/assert/assert_throws.ts'
+
+export * from 'https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v1.0.0/src/index.ts'

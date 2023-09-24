@@ -11,7 +11,11 @@ export class PlayerInBattle extends GamePlayer {
    counterAttackFunction?: CounterAttackFunction
 
    constructor(
-      player: GamePlayer,
+      player: {
+         playerId: string
+         name: string
+         getUnits(): ReadonlyArray<Unit>
+      },
       counterAttackFunction = randomCounterAttackFunction,
    ) {
       super(player)

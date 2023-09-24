@@ -6,7 +6,7 @@ export class GamePlayer implements Player {
    private nextJoinNumber = 1
    private units: Array<Unit> = []
 
-   constructor(player: Player) {
+   constructor(player: { playerId: string; name: string }) {
       this.playerId = player.playerId
       this.name = player.name
    }

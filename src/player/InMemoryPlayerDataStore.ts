@@ -1,7 +1,7 @@
-import { GamePlayer, PlayerAccount, PlayerDataStore } from '../index.ts'
+import { Player, PlayerAccount, PlayerDataStore } from '../index.ts'
 export class InMemoryPlayerDataStore implements PlayerDataStore {
    private nextPlayerId = 1
-   private players: Array<GamePlayer> = []
+   private players: Array<Player> = []
    private playerAccounts: Array<PlayerAccount> = []
    private playerAccessTokens: Map<string, string> = new Map<string, string>()
 
@@ -9,7 +9,7 @@ export class InMemoryPlayerDataStore implements PlayerDataStore {
       this.playerAccounts.push(playerAccount)
    }
 
-   createPlayer(player: GamePlayer): string {
+   createPlayer(player: Player): string {
       const newPlayerId = 'p' + this.nextPlayerId
       player.playerId = newPlayerId
       this.players.push(player)
@@ -21,7 +21,7 @@ export class InMemoryPlayerDataStore implements PlayerDataStore {
       return this.playerAccounts.some((entry) => entry.userName === userName)
    }
 
-   getPlayer(playerId: string | undefined): GamePlayer | undefined {
+   getPlayer(playerId: string | undefined): Player | undefined {
       return this.players.find((entry) => entry.playerId === playerId)
    }
 
