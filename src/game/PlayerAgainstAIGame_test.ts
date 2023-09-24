@@ -515,62 +515,56 @@ Deno.test(
          '12345',
       )
       assertEquals(newPlayerId, 'p1')
+      const loggedInPlayer = await game.login('tp', '12345')
+      assert(loggedInPlayer)
+      assertEquals(loggedInPlayer.name, 'Test Player')
+      assertEquals(loggedInPlayer.userName, 'tp')
+      assertEquals(loggedInPlayer.playerId, 'p1')
+      assert(loggedInPlayer.accessToken)
 
-      game.login('tp', '12345')
-         .then((loggedInPlayer) => {
-            assert(loggedInPlayer)
-            assertEquals(loggedInPlayer.name, 'Test Player')
-            assertEquals(loggedInPlayer.userName, 'tp')
-            assertEquals(loggedInPlayer.playerId, 'p1')
-            assert(loggedInPlayer.accessToken)
+      const playerTwo: GamePlayer = new GamePlayer({
+         playerId: 'doesnotmatter',
+         name: 'AI Player',
+      })
+      playerTwo.addUnit(slimeUnit)
+      playerTwo.addUnit(parentSlimeUnit)
 
-            const playerTwo: GamePlayer = new GamePlayer({
-               playerId: 'doesnotmatter',
-               name: 'AI Player',
-            })
-            playerTwo.addUnit(slimeUnit)
-            playerTwo.addUnit(parentSlimeUnit)
+      const { battleId, battle } = createNonTutorialBattle(
+         playerDataStore,
+         game,
+         newPlayerId,
+         loggedInPlayer.accessToken,
+         playerTwo,
+         randomCounterAttackFunction,
+      )
+      assert(battle)
+      assertEquals(battle.isTutorialBattle, false)
 
-            const { battleId, battle } = createNonTutorialBattle(
-               playerDataStore,
-               game,
-               newPlayerId,
-               loggedInPlayer.accessToken,
-               playerTwo,
-               randomCounterAttackFunction,
-            )
-            assert(battle)
-            assertEquals(battle.isTutorialBattle, false)
+      //When/Then: If accessToken is wrong, getBattle should return undefined
+      assert(battleId)
+      const battleWhenWrongToken = game.getBattle(battleId, 'wrongToken')
+      assert(!battleWhenWrongToken)
+      assert(battleId)
 
-            //When/Then: If accessToken is wrong, getBattle should return undefined
-            assert(battleId)
-            const battleWhenWrongToken = game.getBattle(battleId, 'wrongToken')
-            assert(!battleWhenWrongToken)
-            assert(battleId)
+      // When/Then: Attacking without access token will return missing access token error
+      assertThrows(
+         (): void => {
+            game.attack(battleId, 1, 1)
+         },
+         Error,
+         'Access token needs to be provided in order to get battle',
+      )
+      assert(battleId)
 
-            // When/Then: Attacking without access token will return missing access token error
-            assertThrows(
-               (): void => {
-                  game.attack(battleId, 1, 1)
-               },
-               Error,
-               'Access token needs to be provided in order to get battle',
-            )
-            assert(battleId)
-
-            // When: Attacking with accessToken
-            const battleAfterAttack = game.attack(
-               battleId,
-               1,
-               1,
-               loggedInPlayer.accessToken,
-            )
-            // Then: Attack is successful, does not throw error
-            assert(battleAfterAttack)
-         })
-         .catch((err) => {
-            assertEquals(err.message, 'Should not throw error, see above')
-         })
+      // When: Attacking with accessToken
+      const battleAfterAttack = game.attack(
+         battleId,
+         1,
+         1,
+         loggedInPlayer.accessToken,
+      )
+      // Then: Attack is successful, does not throw error
+      assert(battleAfterAttack)
    },
 )
 
@@ -645,7 +639,7 @@ Deno.test('Login throws error if password is wrong', async () => {
       await game.login('tp', 'wrongPassword')
    } catch (error) {
       assertEquals(error.message, 'Login failed! Invalid credentials')
-   } 
+   }
 })
 
 function createBattle(
