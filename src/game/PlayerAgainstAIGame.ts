@@ -99,13 +99,15 @@ export class PlayerAgainstAIGame {
                   'playerOneId needs to be provided to create non-tutorial battle.',
             }
          } else {
-            if (!await this.isAuthorizedPlayer(playerOneId, playerOneAccessToken)) {
+            if (
+               !await this.isAuthorizedPlayer(playerOneId, playerOneAccessToken)
+            ) {
                return {
                   errorMessage:
                      'Non-tutorial battle cannot be created. Reason: Invalid credentials',
                }
             }
-         } 
+         }
       }
       const battleId = this.createBattleId(playerOneId, playerTwoId)
       const playerOne = await this.playerDataStore.getPlayer(playerOneId)
@@ -134,14 +136,15 @@ export class PlayerAgainstAIGame {
       const battle = this.battles.find((entry) => entry.battleId === battleId)
       if (!battle) {
          return {
-            errorMessage: `Battle for battleId ${battleId} was not found!`
+            errorMessage: `Battle for battleId ${battleId} was not found!`,
          }
       } else if (battle.isTutorialBattle) {
          return battle
       } else {
          if (!playerOneAccessToken) {
             return {
-               errorMessage: 'Access token needs to be provided in order to get battle'
+               errorMessage:
+                  'Access token needs to be provided in order to get battle',
             }
          } else {
             //TODO: Add check if player is authorized, else throw error

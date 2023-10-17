@@ -1,4 +1,4 @@
-import { assert, assertEquals, assertThrows, fail } from '../deps.ts'
+import { assert, assertEquals, fail } from '../deps.ts'
 
 import {
    Battle,
@@ -65,11 +65,11 @@ Deno.test('Battle is not created and not added to Battle list if one player is n
    playerOne.addUnit(slimeUnit)
    playerOne.addUnit(parentSlimeUnit)
 
-   const newPlayerOnePlayerId = await playerDataStore.addPlayerAccount( {
+   const newPlayerOnePlayerId = await playerDataStore.addPlayerAccount({
       playerId: 'new',
       name: playerOne.name,
       userName: playerOne.name,
-      userPassword: 'doesnotmatter'
+      userPassword: 'doesnotmatter',
    })
    playerOne.playerId = newPlayerOnePlayerId
    const newPlayerOneId = await playerDataStore.createPlayer(playerOne)
@@ -650,7 +650,10 @@ Deno.test(
          assertEquals(battle.isTutorialBattle, false)
          //When/Then: If accessToken is wrong, getBattle should return undefined
          assert(battleId)
-         const battleWhenWrongToken = await game.getBattle(battleId, 'wrongToken')
+         const battleWhenWrongToken = await game.getBattle(
+            battleId,
+            'wrongToken',
+         )
          assert(!battleWhenWrongToken)
          assert(battleId)
 
@@ -782,8 +785,8 @@ async function createBattle(
          playerId: 'new',
          name: playerOne.name,
          userName: playerOne.name,
-         userPassword: 'doesnotmatter'
-      }
+         userPassword: 'doesnotmatter',
+      },
    )
    playerOne.playerId = newPlayerOnePlayerId
    const newPlayerOneId = await playerDataStore.createPlayer(playerOne)
@@ -794,8 +797,8 @@ async function createBattle(
          playerId: 'new',
          name: playerTwo.name,
          userName: playerTwo.name,
-         userPassword: 'doesnotmatter'
-      }
+         userPassword: 'doesnotmatter',
+      },
    )
    playerTwo.playerId = newPlayerTwoPlayerId
    const newPlayerTwoId = await playerDataStore.createPlayer(playerTwo)
@@ -950,11 +953,11 @@ Deno.test(
 
       const { battleId } = await createNonTutorialBattle(
          playerDataStore,
-               game,
-               undefined,
-               'doesnotmatter',
-               playerTwo,
-               randomCounterAttackFunction,
+         game,
+         undefined,
+         'doesnotmatter',
+         playerTwo,
+         randomCounterAttackFunction,
       )
       assert(battleId)
       if (typeof battleId !== 'string') {
@@ -1007,14 +1010,17 @@ Deno.test(
          playerTwo,
          randomCounterAttackFunction,
       )
-   
+
       if (typeof battleId === 'object' && 'errorMessage' in battleId) {
          assertEquals(
             battleId.errorMessage,
             'Non-tutorial battle cannot be created. Reason: Invalid credentials',
          )
       } else {
-         fail('Expected ErrorMessage but got BattleId' + battleId + ' and battle ' + battle )
+         fail(
+            'Expected ErrorMessage but got BattleId' + battleId +
+               ' and battle ' + battle,
+         )
       }
    },
 )
