@@ -8,28 +8,33 @@ import {
 const slimeUnit = getDefaultUnit('1')
 const parentSlimeUnit = getDefaultUnit('2')
 
-Deno.test('Player is correctly created and added to Player list', () => {
+Deno.test('Player is correctly created and added to Player list', async () => {
    const playerDataStore = new InMemoryPlayerDataStore()
-   const playerOne: GamePlayer = new GamePlayer({
+   const newPlayerId = await playerDataStore.addPlayerAccount({
       playerId: 'doesnotmatter',
+      name: 'Test Player',
+      userName: 'doesnotmatter',
+      userPassword: 'doesnotmatter',
+   })
+   assertEquals(newPlayerId, 'p1')
+   const playerOne: GamePlayer = new GamePlayer({
+      playerId: newPlayerId,
       name: 'Test Player',
    })
    playerOne.addUnit(slimeUnit)
    playerOne.addUnit(parentSlimeUnit)
 
-   const newPlayerId = playerDataStore.createPlayer(playerOne)
-   assertEquals(newPlayerId, 'p1')
-
-   const newPlayer = playerDataStore.getPlayer(newPlayerId)
+   await playerDataStore.createPlayer(playerOne)
+   const newPlayer = await playerDataStore.getPlayer(newPlayerId)
    assert(newPlayer)
    assertEquals(newPlayer.playerId, newPlayerId)
    assertEquals(newPlayer.name, 'Test Player')
-   assertEquals(newPlayer.getUnit(1), {
+   assertEquals(newPlayer.units[0], {
       name: slimeUnit.name,
       defaultStatus: slimeUnit.defaultStatus,
       joinNumber: 1,
    })
-   assertEquals(newPlayer.getUnit(2), {
+   assertEquals(newPlayer.units[1], {
       name: parentSlimeUnit.name,
       defaultStatus: parentSlimeUnit.defaultStatus,
       joinNumber: 2,

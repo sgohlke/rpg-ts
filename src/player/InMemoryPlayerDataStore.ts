@@ -1,43 +1,85 @@
-import { Player, PlayerAccount, PlayerDataStore } from '../index.ts'
+import { PlayerAccount, PlayerData, PlayerDataStore } from '../index.ts'
 export class InMemoryPlayerDataStore implements PlayerDataStore {
    private nextPlayerId = 1
-   private players: Array<Player> = []
+   private playerData: Array<PlayerData> = []
    private playerAccounts: Array<PlayerAccount> = []
    private playerAccessTokens: Map<string, string> = new Map<string, string>()
 
-   addPlayerAccount(playerAccount: PlayerAccount): void {
-      this.playerAccounts.push(playerAccount)
-   }
-
-   createPlayer(player: Player): string {
+   async addPlayerAccount(playerAccount: PlayerAccount): Promise<string> {
       const newPlayerId = 'p' + this.nextPlayerId
-      player.playerId = newPlayerId
-      this.players.push(player)
+      playerAccount.playerId = newPlayerId
+      this.playerAccounts.push(playerAccount)
       this.nextPlayerId++
-      return newPlayerId
+      return await new Promise((resolve) => {
+         resolve(newPlayerId)
+      })
    }
 
-   doesPlayerExist(userName: string): boolean {
-      return this.playerAccounts.some((entry) => entry.userName === userName)
+   async createPlayer(player: PlayerData): Promise<string> {
+      this.playerData.push(player)
+      return await new Promise((resolve) => {
+         resolve(player.playerId)
+      })
    }
 
-   getPlayer(playerId: string | undefined): Player | undefined {
-      return this.players.find((entry) => entry.playerId === playerId)
+   async doesPlayerExist(userName: string): Promise<boolean> {
+      const maybePlayerAccount = this.playerAccounts.some((entry) =>
+         entry.userName === userName
+      )
+      return await new Promise((resolve) => {
+         resolve(maybePlayerAccount)
+      })
    }
 
-   getPlayerAccount(playerId: string): PlayerAccount | undefined {
-      return this.playerAccounts.find((entry) => entry.playerId === playerId)
+   async getPlayer(
+      playerId: string | undefined,
+   ): Promise<PlayerData | undefined> {
+      const maybePlayerData = this.playerData.find((entry) =>
+         entry.playerId === playerId
+      )
+      return await new Promise((resolve) => {
+         resolve(maybePlayerData)
+      })
    }
 
-   getPlayerAccountForName(userName: string): PlayerAccount | undefined {
-      return this.playerAccounts.find((entry) => entry.userName === userName)
+   async getPlayerAccount(
+      playerId: string,
+   ): Promise<PlayerAccount | undefined> {
+      const maybePlayerAccount = this.playerAccounts.find((entry) =>
+         entry.playerId === playerId
+      )
+      return await new Promise((resolve) => {
+         resolve(maybePlayerAccount)
+      })
    }
 
-   getAccessTokenForPlayer(playerId: string): string | undefined {
-      return this.playerAccessTokens.get(playerId)
+   async getPlayerAccountForName(
+      userName: string,
+   ): Promise<PlayerAccount | undefined> {
+      const maybePlayerAccount = this.playerAccounts.find((entry) =>
+         entry.userName === userName
+      )
+      return await new Promise((resolve) => {
+         resolve(maybePlayerAccount)
+      })
    }
 
-   setPlayerAccessToken(playerId: string, accessToken: string): void {
+   async getAccessTokenForPlayer(
+      playerId: string,
+   ): Promise<string | undefined> {
+      const maybePlayerAccessToken = this.playerAccessTokens.get(playerId)
+      return await new Promise((resolve) => {
+         resolve(maybePlayerAccessToken)
+      })
+   }
+
+   async setPlayerAccessToken(
+      playerId: string,
+      accessToken: string,
+   ): Promise<void> {
       this.playerAccessTokens.set(playerId, accessToken)
+      return await new Promise((resolve) => {
+         resolve()
+      })
    }
 }

@@ -1,5 +1,5 @@
 {
-  "version": "2",
+  "version": "3",
   "remote": {
     "https://deno.land/std@0.202.0/assert/_constants.ts": "8a9da298c26750b28b326b297316cdde860bc237533b07e1337c021379e6b2a9",
     "https://deno.land/std@0.202.0/assert/_diff.ts": "1a3c044aedf77647d6cac86b798c6417603361b66b54c53331b312caeb447aea",
@@ -10,12 +10,14 @@
     "https://deno.land/std@0.202.0/assert/assert_throws.ts": "63784e951475cb7bdfd59878cd25a0931e18f6dc32a6077c454b2cd94f4f4bcd",
     "https://deno.land/std@0.202.0/assert/assertion_error.ts": "4d0bde9b374dfbcbe8ac23f54f567b77024fb67dbb1906a852d67fe050d42f56",
     "https://deno.land/std@0.202.0/assert/equal.ts": "9f1a46d5993966d2596c44e5858eec821859b45f783a5ee2f7a695dfc12d8ece",
+    "https://deno.land/std@0.202.0/assert/fail.ts": "c36353d7ae6e1f7933d45f8ea51e358c8c4b67d7e7502028598fe1fea062e278",
     "https://deno.land/std@0.202.0/fmt/colors.ts": "c51c4642678eb690dcf5ffee5918b675bf01a33fba82acf303701ae1a4f8c8d9",
-    "https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v1.0.0/src/index.ts": "7cc676723fce99762c781891ddc2826761a68dab396d124071b824ebc284ae48",
-    "https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v1.0.0/src/player/Player.ts": "d0bac5eff5a14bac05ce501c28e0fe7fd8e428d29efc86d31b6dfe5e8ab16c64",
-    "https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v1.0.0/src/player/PlayerAccount.ts": "5244a69f76e81b559815e348fdf0c79cce8fe1a3090863471ef42187b933b73c",
-    "https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v1.0.0/src/player/PlayerDataStore.ts": "68b1627379cc52a7392f6cd91f794f64e1506b48f54a146156e5f1d320e26292",
-    "https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v1.0.0/src/unit/Status.ts": "ddae17519d568b7232ca71219dae1be4718652e3bf966de6fe7881a543fab42c",
-    "https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v1.0.0/src/unit/Unit.ts": "39732430b6bf01e3cf22a15f061cd63c26f3e984509f16b11977f365449e99d4"
+    "https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v0.2.1/src/index.ts": "86138eec35174c64a28a57d76b335805082de055170e6191213a0c5085057297",
+    "https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v0.2.1/src/player/Player.ts": "530a542c165e37db88c422411aca122a9f4a9ec77b9cd70a32e0ad2d93e15bbe",
+    "https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v0.2.1/src/player/PlayerAccount.ts": "5244a69f76e81b559815e348fdf0c79cce8fe1a3090863471ef42187b933b73c",
+    "https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v0.2.1/src/player/PlayerData.ts": "8e2ae2df64ea00febeac429d053aae0a48906a367e660bb745dd2306e14088dd",
+    "https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v0.2.1/src/player/PlayerDataStore.ts": "b853746b607c43ab851e883b8429e3e5838f0f88342a3ac63fc81104e6bb2e37",
+    "https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v0.2.1/src/unit/Status.ts": "ddae17519d568b7232ca71219dae1be4718652e3bf966de6fe7881a543fab42c",
+    "https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v0.2.1/src/unit/Unit.ts": "39732430b6bf01e3cf22a15f061cd63c26f3e984509f16b11977f365449e99d4"
   }
 }

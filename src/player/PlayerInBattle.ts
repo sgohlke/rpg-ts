@@ -1,6 +1,7 @@
 import {
    CounterAttackFunction,
    GamePlayer,
+   PlayerData,
    randomCounterAttackFunction,
    Unit,
    UnitInBattle,
@@ -11,17 +12,12 @@ export class PlayerInBattle extends GamePlayer {
    counterAttackFunction?: CounterAttackFunction
 
    constructor(
-      player: {
-         playerId: string
-         name: string
-         getUnits(): ReadonlyArray<Unit>
-      },
+      player: PlayerData,
       counterAttackFunction = randomCounterAttackFunction,
    ) {
       super(player)
       this.counterAttackFunction = counterAttackFunction
-      //FIXME: Also initialize units, not only unitsInBattle
-      this.initUnitsInBattle(player.getUnits())
+      this.initUnitsInBattle(player.units)
    }
 
    initUnitsInBattle(units: ReadonlyArray<Unit>): void {

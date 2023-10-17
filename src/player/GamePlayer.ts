@@ -4,7 +4,7 @@ export class GamePlayer implements Player {
    playerId: string
    name: string
    private nextJoinNumber = 1
-   private units: Array<Unit> = []
+   units: Array<Unit> = []
 
    constructor(player: { playerId: string; name: string }) {
       this.playerId = player.playerId
@@ -23,11 +23,11 @@ export class GamePlayer implements Player {
    }
 
    getUnit(joinNumber: number): Unit | undefined {
-      return this.units.find((entry) => entry.joinNumber === joinNumber)
+      return this.getUnits().find((entry) => entry.joinNumber === joinNumber)
    }
 
    getNumberOfUnits(): number {
-      return this.units.length
+      return this.getUnits().length
    }
 
    getUnits(): ReadonlyArray<Unit> {

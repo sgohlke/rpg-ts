@@ -4,6 +4,7 @@ import {
    calculateDamage,
    createPasswordHash,
    GamePlayer,
+   GeneralError,
    generateAccessTokenHash,
    LoggedInPlayer,
    PlayerDataStore,
@@ -26,21 +27,23 @@ export class PlayerAgainstAIGame {
       userName: string,
       password: string,
    ): Promise<string> {
-      const playerExists = this.playerDataStore.doesPlayerExist(userName)
+      const playerExists = await this.playerDataStore.doesPlayerExist(userName)
       if (playerExists) {
          throw new Error(
             `Cannot register user "${userName}", the username already exists`,
          )
       }
-
-      const playerId = this.playerDataStore.createPlayer(player)
       const hashedPassword = await createPasswordHash(password)
-      this.playerDataStore.addPlayerAccount({
-         playerId: playerId,
+      const playerId = await this.playerDataStore.addPlayerAccount({
+         playerId: 'new',
          name: name,
          userName: userName,
          userPassword: hashedPassword,
       })
+      player.playerId = playerId
+
+      // TODO: Check error handling
+      await this.playerDataStore.createPlayer(player)
       return playerId
    }
 
@@ -48,7 +51,7 @@ export class PlayerAgainstAIGame {
       userName: string,
       userPassword: string,
    ): Promise<LoggedInPlayer> {
-      const playerAccount = this.playerDataStore.getPlayerAccountForName(
+      const playerAccount = await this.playerDataStore.getPlayerAccountForName(
          userName,
       )
       if (!playerAccount) {
@@ -77,34 +80,36 @@ export class PlayerAgainstAIGame {
       }
    }
 
-   createBattle(
+   async createBattle(
       playerOneId: string | undefined,
       playerTwoId: string | undefined,
       playerTwoCounterAttackFunction = randomCounterAttackFunction,
       isTutorialBattle = true,
       playerOneAccessToken?: string,
-   ): string | undefined {
+   ): Promise<string | GeneralError | undefined> {
       if (!isTutorialBattle) {
          if (!playerOneAccessToken) {
-            throw new Error(
-               'Access token needs to be provided in order to create a non-tutorial battle',
-            )
+            return {
+               errorMessage:
+                  'Access token needs to be provided in order to create a non-tutorial battle',
+            }
          } else if (!playerOneId) {
-            throw new Error(
-               'playerOneId needs to be provided to create non-tutorial battle.',
-            )
-         } else if (
-            !this.isAuthorizedPlayer(playerOneId, playerOneAccessToken)
-         ) {
-            throw new Error(
-               'Non-tutorial battle cannot be created. Reason: Invalid credentials',
-            )
-         }
+            return {
+               errorMessage:
+                  'playerOneId needs to be provided to create non-tutorial battle.',
+            }
+         } else {
+            if (!await this.isAuthorizedPlayer(playerOneId, playerOneAccessToken)) {
+               return {
+                  errorMessage:
+                     'Non-tutorial battle cannot be created. Reason: Invalid credentials',
+               }
+            }
+         } 
       }
-
       const battleId = this.createBattleId(playerOneId, playerTwoId)
-      const playerOne = this.playerDataStore.getPlayer(playerOneId)
-      const playerTwo = this.playerDataStore.getPlayer(playerTwoId)
+      const playerOne = await this.playerDataStore.getPlayer(playerOneId)
+      const playerTwo = await this.playerDataStore.getPlayer(playerTwoId)
       if (playerOne && playerTwo) {
          this.battles.push({
             battleId,
@@ -122,72 +127,76 @@ export class PlayerAgainstAIGame {
       }
    }
 
-   getBattle(
+   async getBattle(
       battleId: string,
       playerOneAccessToken?: string,
-   ): Battle | undefined {
+   ): Promise<Battle | GeneralError | undefined> {
       const battle = this.battles.find((entry) => entry.battleId === battleId)
       if (!battle) {
-         throw new Error(
-            `Battle for battleId ${battleId} was not found!`,
-         )
+         return {
+            errorMessage: `Battle for battleId ${battleId} was not found!`
+         }
       } else if (battle.isTutorialBattle) {
          return battle
       } else {
          if (!playerOneAccessToken) {
-            throw new Error(
-               'Access token needs to be provided in order to get battle',
-            )
+            return {
+               errorMessage: 'Access token needs to be provided in order to get battle'
+            }
          } else {
             //TODO: Add check if player is authorized, else throw error
-            return this.isAuthorizedPlayer(
-                  battle.playerOne.playerId,
-                  playerOneAccessToken,
-               )
-               ? battle
-               : undefined
+            const isAuthorized = await this.isAuthorizedPlayer(
+               battle.playerOne.playerId,
+               playerOneAccessToken,
+            )
+            return isAuthorized ? battle : undefined
          }
       }
    }
 
-   attack(
+   async attack(
       battleId: string,
       attakerJoinNumber: number,
       defenderJoinNumber: number,
       playerOneAccessToken?: string,
-   ): Battle | undefined {
-      const battle = this.getBattle(battleId, playerOneAccessToken)
-      if (battle) {
+   ): Promise<Battle | GeneralError | undefined> {
+      const battle = await this.getBattle(battleId, playerOneAccessToken)
+      if (battle && 'battleId' in battle) {
          if (battle.battleStatus === BattleStatus.ENDED) {
-            throw new Error('Cannot attack in a battle that has already ended')
+            return {
+               errorMessage: 'Cannot attack in a battle that has already ended',
+            }
          }
 
          const attackerUnit = battle.playerOne.getUnitInBattle(
             attakerJoinNumber,
          )
          if (!attackerUnit) {
-            throw new Error(
-               `Cannot attack, did not find attacker unit with join number ${attakerJoinNumber}`,
-            )
+            return {
+               errorMessage:
+                  `Cannot attack, did not find attacker unit with join number ${attakerJoinNumber}`,
+            }
          }
 
          const defenderUnit = battle.playerTwo.getUnitInBattle(
             defenderJoinNumber,
          )
          if (!defenderUnit) {
-            throw new Error(
-               `Cannot attack, did not find defender unit with join number ${defenderJoinNumber}`,
-            )
+            return {
+               errorMessage:
+                  `Cannot attack, did not find defender unit with join number ${defenderJoinNumber}`,
+            }
          }
 
          if (attackerUnit && attackerUnit.inBattleStatus.hp === 0) {
-            throw new Error('Cannot attack with a unit with 0 HP')
+            return { errorMessage: 'Cannot attack with a unit with 0 HP' }
          }
 
          if (defenderUnit && defenderUnit.inBattleStatus.hp === 0) {
-            throw new Error(
-               'Cannot attack a unit that has already been defeated',
-            )
+            return {
+               errorMessage:
+                  'Cannot attack a unit that has already been defeated',
+            }
          }
 
          if (attackerUnit && defenderUnit) {
@@ -229,19 +238,22 @@ export class PlayerAgainstAIGame {
       return playerOneId + '-' + playerTwoId + '_' + Date.now()
    }
 
-   public isAuthorizedPlayer(
+   public async isAuthorizedPlayer(
       playerId: string,
       providedAccessToken: string,
-   ): boolean {
+   ): Promise<boolean | GeneralError> {
       if (!providedAccessToken) {
-         throw new Error(
-            `Access Token for player ${playerId} has to be provided.`,
-         )
+         return {
+            errorMessage:
+               `Access Token for player ${playerId} has to be provided.`,
+         }
       }
-      const knownAccessTokenForPlayer = this.playerDataStore
+      const knownAccessTokenForPlayer = await this.playerDataStore
          .getAccessTokenForPlayer(playerId)
       if (!knownAccessTokenForPlayer) {
-         throw new Error(`Did not find access token for player ${playerId}`)
+         return {
+            errorMessage: `Did not find access token for player ${playerId}`,
+         }
       }
       return knownAccessTokenForPlayer === providedAccessToken
    }
