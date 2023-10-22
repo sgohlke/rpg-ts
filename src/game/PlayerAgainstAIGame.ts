@@ -26,12 +26,13 @@ export class PlayerAgainstAIGame {
       name: string,
       userName: string,
       password: string,
-   ): Promise<string> {
+   ): Promise<string | GeneralError> {
       const playerExists = await this.playerDataStore.doesPlayerExist(userName)
       if (playerExists) {
-         throw new Error(
-            `Cannot register user "${userName}", the username already exists`,
-         )
+         return {
+            errorMessage:
+               `Cannot register user "${userName}", the username already exists`,
+         }
       }
       const hashedPassword = await createPasswordHash(password)
       const playerId = await this.playerDataStore.addPlayerAccount({
@@ -40,23 +41,25 @@ export class PlayerAgainstAIGame {
          userName: userName,
          userPassword: hashedPassword,
       })
-      player.playerId = playerId
+      if (typeof playerId === 'string') {
+         player.playerId = playerId
 
-      // TODO: Check error handling
-      await this.playerDataStore.createPlayer(player)
-      return playerId
+         // TODO: Check error handling
+         await this.playerDataStore.createPlayer(player)
+         return playerId
+      } else {
+         return playerId
+      }
    }
 
    async login(
       userName: string,
       userPassword: string,
-   ): Promise<LoggedInPlayer> {
+   ): Promise<LoggedInPlayer | GeneralError> {
       const playerAccount = await this.playerDataStore.getPlayerAccountForName(
          userName,
       )
-      if (!playerAccount) {
-         throw new Error('Login failed! Invalid credentials')
-      } else {
+      if (playerAccount && 'playerId' in playerAccount) {
          const verificationSuccessful = await verifyPassword(
             userPassword,
             playerAccount.userPassword,
@@ -75,7 +78,13 @@ export class PlayerAgainstAIGame {
                accessToken: accessToken,
             }
          } else {
-            throw new Error('Login failed! Invalid credentials')
+            return {
+               errorMessage: 'Login failed! Invalid credentials',
+            }
+         }
+      } else {
+         return playerAccount ?? {
+            errorMessage: 'Login failed! Invalid credentials',
          }
       }
    }
@@ -112,7 +121,10 @@ export class PlayerAgainstAIGame {
       const battleId = this.createBattleId(playerOneId, playerTwoId)
       const playerOne = await this.playerDataStore.getPlayer(playerOneId)
       const playerTwo = await this.playerDataStore.getPlayer(playerTwoId)
-      if (playerOne && playerTwo) {
+      if (
+         playerOne && 'playerId' in playerOne &&
+         playerTwo && 'playerId' in playerTwo
+      ) {
          this.battles.push({
             battleId,
             playerOne: new PlayerInBattle(playerOne),
@@ -147,7 +159,7 @@ export class PlayerAgainstAIGame {
                   'Access token needs to be provided in order to get battle',
             }
          } else {
-            //TODO: Add check if player is authorized, else throw error
+            //TODO: Add check if player is authorized
             const isAuthorized = await this.isAuthorizedPlayer(
                battle.playerOne.playerId,
                playerOneAccessToken,

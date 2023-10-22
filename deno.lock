@@ -18,6 +18,14 @@
     "https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v0.2.1/src/player/PlayerData.ts": "8e2ae2df64ea00febeac429d053aae0a48906a367e660bb745dd2306e14088dd",
     "https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v0.2.1/src/player/PlayerDataStore.ts": "b853746b607c43ab851e883b8429e3e5838f0f88342a3ac63fc81104e6bb2e37",
     "https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v0.2.1/src/unit/Status.ts": "ddae17519d568b7232ca71219dae1be4718652e3bf966de6fe7881a543fab42c",
-    "https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v0.2.1/src/unit/Unit.ts": "39732430b6bf01e3cf22a15f061cd63c26f3e984509f16b11977f365449e99d4"
+    "https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v0.2.1/src/unit/Unit.ts": "39732430b6bf01e3cf22a15f061cd63c26f3e984509f16b11977f365449e99d4",
+    "https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v0.3.0/src/error/GeneralError.ts": "1bee59bc1a53da68822eb9fc51861f1e68f0269724ab3f93fc52ddb51ee4fdee",
+    "https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v0.3.0/src/index.ts": "f22c4ccc88f16d2dc9664e40ab66df0f2cbc0422107b811adacd9c29b1cf170b",
+    "https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v0.3.0/src/player/Player.ts": "530a542c165e37db88c422411aca122a9f4a9ec77b9cd70a32e0ad2d93e15bbe",
+    "https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v0.3.0/src/player/PlayerAccount.ts": "5244a69f76e81b559815e348fdf0c79cce8fe1a3090863471ef42187b933b73c",
+    "https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v0.3.0/src/player/PlayerData.ts": "8e2ae2df64ea00febeac429d053aae0a48906a367e660bb745dd2306e14088dd",
+    "https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v0.3.0/src/player/PlayerDataStore.ts": "b75db2f9e0e1e4246a17d5929560b4d42622e684d82a6feb9cfaab4fa83a42f7",
+    "https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v0.3.0/src/unit/Status.ts": "ddae17519d568b7232ca71219dae1be4718652e3bf966de6fe7881a543fab42c",
+    "https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v0.3.0/src/unit/Unit.ts": "39732430b6bf01e3cf22a15f061cd63c26f3e984509f16b11977f365449e99d4"
   }
 }

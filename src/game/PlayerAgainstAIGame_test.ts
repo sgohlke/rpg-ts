@@ -1,3 +1,4 @@
+import { PlayerAccount } from 'https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v0.3.0/src/player/PlayerAccount.ts'
 import { assert, assertEquals, fail } from '../deps.ts'
 
 import {
@@ -71,13 +72,24 @@ Deno.test('Battle is not created and not added to Battle list if one player is n
       userName: playerOne.name,
       userPassword: 'doesnotmatter',
    })
-   playerOne.playerId = newPlayerOnePlayerId
-   const newPlayerOneId = await playerDataStore.createPlayer(playerOne)
-   assertEquals(newPlayerOneId, 'p1')
-   const game = new PlayerAgainstAIGame(playerDataStore)
-   const newPlayerTwoId = 'pdoesnotexist'
-   const battleId = await game.createBattle(newPlayerOneId, newPlayerTwoId)
-   assertEquals(battleId, undefined)
+   if (typeof newPlayerOnePlayerId === 'string') {
+      playerOne.playerId = newPlayerOnePlayerId
+      const newPlayerOneId = await playerDataStore.createPlayer(playerOne)
+      if (typeof newPlayerOneId === 'string') {
+         assertEquals(newPlayerOneId, 'p1')
+         const game = new PlayerAgainstAIGame(playerDataStore)
+         const newPlayerTwoId = 'pdoesnotexist'
+         const battleId = await game.createBattle(
+            newPlayerOneId,
+            newPlayerTwoId,
+         )
+         assertEquals(battleId, undefined)
+      } else {
+         fail('Should not reach here!')
+      }
+   } else {
+      fail('Should not reach here!')
+   }
 })
 
 Deno.test('Attack in battle is performed correctly', async () => {
@@ -591,17 +603,56 @@ Deno.test('PlayerAccount is correctly created and added to PlayerAccount map', a
       'tp',
       '12345',
    )
-   assertEquals(newPlayerId, 'p1')
+   if (typeof newPlayerId === 'string') {
+      assertEquals(newPlayerId, 'p1')
+      const playerAccount = await playerDataStore.getPlayerAccount(newPlayerId)
+      assert(playerAccount)
+      if ('playerId' in playerAccount) {
+         assertEquals(playerAccount.playerId, newPlayerId)
+         assertEquals(playerAccount.name, 'Test Player')
+         assertEquals(playerAccount.userName, 'tp')
+         assertEquals(
+            playerAccount.userPassword,
+            '5994471abb01112afcc18159f6cc74b4f511b99806da59b3caf5a9c173cacfc5',
+         )
+      } else {
+         fail('Should not reach here!')
+      }
+   } else {
+      fail('Should not reach here!')
+   }
+})
 
-   const playerAccount = await playerDataStore.getPlayerAccount(newPlayerId)
-   assert(playerAccount)
-   assertEquals(playerAccount.playerId, newPlayerId)
-   assertEquals(playerAccount.name, 'Test Player')
-   assertEquals(playerAccount.userName, 'tp')
-   assertEquals(
-      playerAccount.userPassword,
-      '5994471abb01112afcc18159f6cc74b4f511b99806da59b3caf5a9c173cacfc5',
+Deno.test('PlayerAccount is not created if an error occurred during account creation', async () => {
+   class MockedInMemoryPlayerDataStore extends InMemoryPlayerDataStore {
+      async addPlayerAccount(): Promise<string | GeneralError> {
+         return await new Promise((resolve) => {
+            resolve({ errorMessage: 'Account creation failed' })
+         })
+      }
+   }
+
+   const playerDataStore = new MockedInMemoryPlayerDataStore()
+   const game = new PlayerAgainstAIGame(playerDataStore)
+   const playerOne: GamePlayer = new GamePlayer({
+      playerId: 'doesnotmatter',
+      name: 'Test Player',
+   })
+   playerOne.addUnit(slimeUnit)
+   playerOne.addUnit(parentSlimeUnit)
+
+   const newPlayerId = await game.registerPlayer(
+      playerOne,
+      'Test Player',
+      'tp',
+      '12345',
    )
+
+   if (typeof newPlayerId === 'object') {
+      assertEquals(newPlayerId.errorMessage, 'Account creation failed')
+   } else {
+      fail('Should not reach here!')
+   }
 })
 
 Deno.test(
@@ -626,67 +677,71 @@ Deno.test(
       assertEquals(newPlayerId, 'p1')
       const loggedInPlayer = await game.login('tp', '12345')
       assert(loggedInPlayer)
-      assertEquals(loggedInPlayer.name, 'Test Player')
-      assertEquals(loggedInPlayer.userName, 'tp')
-      assertEquals(loggedInPlayer.playerId, 'p1')
-      assert(loggedInPlayer.accessToken)
+      if ('playerId' in loggedInPlayer) {
+         assertEquals(loggedInPlayer.name, 'Test Player')
+         assertEquals(loggedInPlayer.userName, 'tp')
+         assertEquals(loggedInPlayer.playerId, 'p1')
+         assert(loggedInPlayer.accessToken)
 
-      const playerTwo: GamePlayer = new GamePlayer({
-         playerId: 'doesnotmatter',
-         name: 'AI Player',
-      })
-      playerTwo.addUnit(slimeUnit)
-      playerTwo.addUnit(parentSlimeUnit)
-      const { battleId, battle } = await createNonTutorialBattle(
-         playerDataStore,
-         game,
-         newPlayerId,
-         loggedInPlayer.accessToken,
-         playerTwo,
-         randomCounterAttackFunction,
-      )
-      assert(battle)
-      if (typeof battleId === 'string' && 'battleId' in battle) {
-         assertEquals(battle.isTutorialBattle, false)
-         //When/Then: If accessToken is wrong, getBattle should return undefined
-         assert(battleId)
-         const battleWhenWrongToken = await game.getBattle(
-            battleId,
-            'wrongToken',
-         )
-         assert(!battleWhenWrongToken)
-         assert(battleId)
-
-         // When/Then: Attacking without access token will return missing access token error
-         const errorMessage = await game.attack(battleId, 1, 1)
-         assert(errorMessage)
-         if ('errorMessage' in errorMessage) {
-            assertEquals(
-               errorMessage.errorMessage,
-               'Access token needs to be provided in order to get battle',
-            )
-         } else {
-            fail('Expected ErrorMessage but got Battle')
-         }
-
-         assert(battleId)
-
-         // When: Attacking with accessToken
-         const battleAfterAttack = await game.attack(
-            battleId,
-            1,
-            1,
+         const playerTwo: GamePlayer = new GamePlayer({
+            playerId: 'doesnotmatter',
+            name: 'AI Player',
+         })
+         playerTwo.addUnit(slimeUnit)
+         playerTwo.addUnit(parentSlimeUnit)
+         const { battleId, battle } = await createNonTutorialBattle(
+            playerDataStore,
+            game,
+            loggedInPlayer.playerId,
             loggedInPlayer.accessToken,
+            playerTwo,
+            randomCounterAttackFunction,
          )
-         // Then: Attack is successful, does not throw error
-         assert(battleAfterAttack)
-         if ('battleId' in battleAfterAttack) {
-            assertEquals(battleAfterAttack.battleId, battleId)
+         assert(battle)
+         if (typeof battleId === 'string' && 'battleId' in battle) {
+            assertEquals(battle.isTutorialBattle, false)
+            //When/Then: If accessToken is wrong, getBattle should return undefined
+            assert(battleId)
+            const battleWhenWrongToken = await game.getBattle(
+               battleId,
+               'wrongToken',
+            )
+            assert(!battleWhenWrongToken)
+            assert(battleId)
+
+            // When/Then: Attacking without access token will return missing access token error
+            const errorMessage = await game.attack(battleId, 1, 1)
+            assert(errorMessage)
+            if ('errorMessage' in errorMessage) {
+               assertEquals(
+                  errorMessage.errorMessage,
+                  'Access token needs to be provided in order to get battle',
+               )
+            } else {
+               fail('Expected ErrorMessage but got Battle')
+            }
+
+            assert(battleId)
+
+            // When: Attacking with accessToken
+            const battleAfterAttack = await game.attack(
+               battleId,
+               1,
+               1,
+               loggedInPlayer.accessToken,
+            )
+            // Then: Attack is successful, does not throw error
+            assert(battleAfterAttack)
+            if ('battleId' in battleAfterAttack) {
+               assertEquals(battleAfterAttack.battleId, battleId)
+            } else {
+               fail('Should not reach this!')
+            }
          } else {
             fail('Should not reach this!')
          }
       } else {
-         fail('Should not reach this!')
+         fail('Should not reach here!')
       }
    },
 )
@@ -788,33 +843,41 @@ async function createBattle(
          userPassword: 'doesnotmatter',
       },
    )
-   playerOne.playerId = newPlayerOnePlayerId
-   const newPlayerOneId = await playerDataStore.createPlayer(playerOne)
-   assertEquals(newPlayerOneId, 'p1')
+   if (typeof newPlayerOnePlayerId === 'string') {
+      playerOne.playerId = newPlayerOnePlayerId
+      const newPlayerOneId = await playerDataStore.createPlayer(playerOne)
+      assertEquals(newPlayerOneId, 'p1')
 
-   const newPlayerTwoPlayerId = await playerDataStore.addPlayerAccount(
-      {
-         playerId: 'new',
-         name: playerTwo.name,
-         userName: playerTwo.name,
-         userPassword: 'doesnotmatter',
-      },
-   )
-   playerTwo.playerId = newPlayerTwoPlayerId
-   const newPlayerTwoId = await playerDataStore.createPlayer(playerTwo)
-   assertEquals(newPlayerTwoId, 'p2')
-   const battleId = await game.createBattle(
-      newPlayerOneId,
-      newPlayerTwoId,
-      playerTwoCounterAttackStrategy,
-   )
-   assert(battleId)
-   if (typeof battleId === 'string') {
-      const battle = await game.getBattle(battleId)
-      assert(battle)
-      return { battleId, battle }
+      const newPlayerTwoPlayerId = await playerDataStore.addPlayerAccount(
+         {
+            playerId: 'new',
+            name: playerTwo.name,
+            userName: playerTwo.name,
+            userPassword: 'doesnotmatter',
+         },
+      )
+      if (typeof newPlayerTwoPlayerId === 'string') {
+         playerTwo.playerId = newPlayerTwoPlayerId
+         const newPlayerTwoId = await playerDataStore.createPlayer(playerTwo)
+         assertEquals(newPlayerTwoId, 'p2')
+         const battleId = await game.createBattle(
+            newPlayerOnePlayerId,
+            newPlayerTwoPlayerId,
+            playerTwoCounterAttackStrategy,
+         )
+         assert(battleId)
+         if (typeof battleId === 'string') {
+            const battle = await game.getBattle(battleId)
+            assert(battle)
+            return { battleId, battle }
+         } else {
+            return { battleId, battle: undefined }
+         }
+      } else {
+         fail('Should not reach here!')
+      }
    } else {
-      return { battleId, battle: undefined }
+      fail('Should not reach here!')
    }
 }
 
@@ -831,21 +894,35 @@ async function createNonTutorialBattle(
       battle: Battle | GeneralError | undefined
    }
 > {
-   const newPlayerTwoId = await playerDataStore.createPlayer(playerTwo)
-   assert(newPlayerTwoId)
-   const battleId = await game.createBattle(
-      playerOneId,
-      newPlayerTwoId,
-      playerTwoCounterAttackStrategy,
-      false,
-      playerOneAccessToken,
+   const newPlayerTwoPlayerId = await playerDataStore.addPlayerAccount(
+      {
+         playerId: 'new',
+         name: playerTwo.name,
+         userName: playerTwo.name,
+         userPassword: 'doesnotmatter',
+      },
    )
-   if (typeof battleId === 'string') {
-      const battle = await game.getBattle(battleId, playerOneAccessToken)
-      assert(battle)
-      return { battleId, battle }
+   if (typeof newPlayerTwoPlayerId === 'string') {
+      playerTwo.playerId = newPlayerTwoPlayerId
+      const newPlayerTwoId = await playerDataStore.createPlayer(playerTwo)
+      assert(newPlayerTwoId)
+      const battleId = await game.createBattle(
+         playerOneId,
+         newPlayerTwoPlayerId,
+         playerTwoCounterAttackStrategy,
+         false,
+         playerOneAccessToken,
+      )
+      if (typeof battleId === 'string') {
+         const battle = await game.getBattle(battleId, playerOneAccessToken)
+         assert(battle)
+         return { battleId, battle }
+      } else {
+         return { battleId, battle: undefined }
+      }
    } else {
-      return { battleId, battle: undefined }
+      fail('Should not reach here')
+      return { battleId: undefined, battle: undefined }
    }
 }
 
@@ -894,31 +971,36 @@ Deno.test(
          'tp',
          '12345',
       )
-      assertEquals(newPlayerId, 'p1')
 
-      const playerTwo: GamePlayer = new GamePlayer({
-         playerId: 'doesnotmatter',
-         name: 'AI Player',
-      })
-      playerTwo.addUnit(slimeUnit)
-      playerTwo.addUnit(parentSlimeUnit)
+      if (typeof newPlayerId === 'string') {
+         assertEquals(newPlayerId, 'p1')
 
-      const { battleId } = await createNonTutorialBattle(
-         playerDataStore,
-         game,
-         newPlayerId,
-         undefined,
-         playerTwo,
-         randomCounterAttackFunction,
-      )
-      assert(battleId)
-      if (typeof battleId !== 'string') {
-         assertEquals(
-            battleId.errorMessage,
-            'Access token needs to be provided in order to create a non-tutorial battle',
+         const playerTwo: GamePlayer = new GamePlayer({
+            playerId: 'doesnotmatter',
+            name: 'AI Player',
+         })
+         playerTwo.addUnit(slimeUnit)
+         playerTwo.addUnit(parentSlimeUnit)
+
+         const { battleId } = await createNonTutorialBattle(
+            playerDataStore,
+            game,
+            newPlayerId,
+            undefined,
+            playerTwo,
+            randomCounterAttackFunction,
          )
+         assert(battleId)
+         if (typeof battleId !== 'string') {
+            assertEquals(
+               battleId.errorMessage,
+               'Access token needs to be provided in order to create a non-tutorial battle',
+            )
+         } else {
+            fail('Expected ErrorMessage but got Battle')
+         }
       } else {
-         fail('Expected ErrorMessage but got Battle')
+         fail('Should not reach here!')
       }
    },
 )
@@ -990,37 +1072,41 @@ Deno.test(
          'tp',
          '12345',
       )
-      assertEquals(newPlayerId, 'p1')
+      if (typeof newPlayerId === 'string') {
+         assertEquals(newPlayerId, 'p1')
 
-      const playerTwo: GamePlayer = new GamePlayer({
-         playerId: 'doesnotmatter',
-         name: 'AI Player',
-      })
-      playerTwo.addUnit(slimeUnit)
-      playerTwo.addUnit(parentSlimeUnit)
+         const playerTwo: GamePlayer = new GamePlayer({
+            playerId: 'doesnotmatter',
+            name: 'AI Player',
+         })
+         playerTwo.addUnit(slimeUnit)
+         playerTwo.addUnit(parentSlimeUnit)
 
-      //Login so playerOne would have accessToken available
-      await game.login('tp', '12345')
+         //Login so playerOne would have accessToken available
+         await game.login('tp', '12345')
 
-      const { battleId, battle } = await createNonTutorialBattle(
-         playerDataStore,
-         game,
-         newPlayerId,
-         'wrongToken',
-         playerTwo,
-         randomCounterAttackFunction,
-      )
-
-      if (typeof battleId === 'object' && 'errorMessage' in battleId) {
-         assertEquals(
-            battleId.errorMessage,
-            'Non-tutorial battle cannot be created. Reason: Invalid credentials',
+         const { battleId, battle } = await createNonTutorialBattle(
+            playerDataStore,
+            game,
+            newPlayerId,
+            'wrongToken',
+            playerTwo,
+            randomCounterAttackFunction,
          )
+
+         if (typeof battleId === 'object' && 'errorMessage' in battleId) {
+            assertEquals(
+               battleId.errorMessage,
+               'Non-tutorial battle cannot be created. Reason: Invalid credentials',
+            )
+         } else {
+            fail(
+               'Expected ErrorMessage but got BattleId' + battleId +
+                  ' and battle ' + battle,
+            )
+         }
       } else {
-         fail(
-            'Expected ErrorMessage but got BattleId' + battleId +
-               ' and battle ' + battle,
-         )
+         fail('Should not reach here!')
       }
    },
 )
