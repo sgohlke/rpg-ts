@@ -1,4 +1,3 @@
-import { PlayerAccount } from 'https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v0.3.0/src/player/PlayerAccount.ts'
 import { assert, assertEquals, fail } from '../deps.ts'
 
 import {
