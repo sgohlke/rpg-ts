@@ -16,6 +16,7 @@ export class PlayerInBattle extends GamePlayer {
       counterAttackFunction = randomCounterAttackFunction,
    ) {
       super(player)
+      this.units = player.units
       this.counterAttackFunction = counterAttackFunction
       this.initUnitsInBattle(player.units)
    }

@@ -18,6 +18,11 @@ Deno.test('PlayerInBattle is correctly created', () => {
    const playerInBattle = new PlayerInBattle(player)
    assertEquals(playerInBattle.playerId, 'p1')
    assertEquals(playerInBattle.name, 'Test Player')
+   assertEquals(playerInBattle.units[0], {
+      joinNumber: 1,
+      name: unit.name,
+      defaultStatus: unit.defaultStatus,
+   })
    assertEquals(playerInBattle.getNumberOfUnitsInBattle(), 1)
    //assertEquals(playerInBattle, undefined);
 
