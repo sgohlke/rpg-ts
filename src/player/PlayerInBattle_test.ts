@@ -36,6 +36,7 @@ Deno.test('PlayerInBattle is correctly created', () => {
          hp: unit.defaultStatus.hp,
          atk: unit.defaultStatus.atk,
          def: unit.defaultStatus.def,
+         spd: unit.defaultStatus.spd,
       } as InBattleStatus,
    )
 })

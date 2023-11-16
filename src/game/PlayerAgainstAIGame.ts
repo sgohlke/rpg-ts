@@ -1,5 +1,6 @@
 import {
    Battle,
+   BattleOptions,
    BattleStatus,
    calculateDamage,
    createPasswordHash,
@@ -90,12 +91,25 @@ export class PlayerAgainstAIGame {
    }
 
    async createBattle(
-      playerOneId: string | undefined,
-      playerTwoId: string | undefined,
-      playerTwoCounterAttackFunction = randomCounterAttackFunction,
-      isTutorialBattle = true,
-      playerOneAccessToken?: string,
+      battleOptions: BattleOptions,
    ): Promise<string | GeneralError | undefined> {
+      const {
+         playerOneAccessToken,
+         playerOneId,
+         playerTwoId,
+         turnBar,
+      } = battleOptions
+
+      let {
+         isTutorialBattle,
+         playerTwoCounterAttackFunction,
+      } = battleOptions
+
+      // Set default values if options are not set
+      isTutorialBattle = isTutorialBattle ?? true
+      playerTwoCounterAttackFunction = playerTwoCounterAttackFunction ??
+         randomCounterAttackFunction
+
       if (!isTutorialBattle) {
          if (!playerOneAccessToken) {
             return {
@@ -125,15 +139,25 @@ export class PlayerAgainstAIGame {
          playerOne && 'playerId' in playerOne &&
          playerTwo && 'playerId' in playerTwo
       ) {
+         const playerOneInBattle = new PlayerInBattle(playerOne)
+         const playerTwoInBattle = new PlayerInBattle(
+            playerTwo,
+            playerTwoCounterAttackFunction,
+         )
+
+         if (turnBar) {
+            turnBar.initTurnBar(playerOneInBattle, playerTwoInBattle)
+            //TODO: Check if AI player is on turn and perform actions
+         }
+
          this.battles.push({
             battleId,
-            playerOne: new PlayerInBattle(playerOne),
-            playerTwo: new PlayerInBattle(
-               playerTwo,
-               playerTwoCounterAttackFunction,
-            ),
+            battleActions: [],
+            playerOne: playerOneInBattle,
+            playerTwo: playerTwoInBattle,
             battleStatus: BattleStatus.ACTIVE,
             isTutorialBattle: isTutorialBattle,
+            turnBar: turnBar,
          })
          return battleId
       } else {
@@ -182,7 +206,6 @@ export class PlayerAgainstAIGame {
                errorMessage: 'Cannot attack in a battle that has already ended',
             }
          }
-
          const attackerUnit = battle.playerOne.getUnitInBattle(
             attakerJoinNumber,
          )
@@ -190,6 +213,29 @@ export class PlayerAgainstAIGame {
             return {
                errorMessage:
                   `Cannot attack, did not find attacker unit with join number ${attakerJoinNumber}`,
+            }
+         }
+
+         // Check if attacker is current turn
+         const turnBar = battle.turnBar
+         if (turnBar) {
+            const currentTurn = turnBar.currentTurn
+            if (
+               currentTurn && currentTurn.playerId !== battle.playerOne.playerId
+            ) {
+               return {
+                  errorMessage:
+                     `Cannot attack, player ${battle.playerOne.playerId} is not on turn. Player on turn is ${currentTurn.playerId}`,
+               }
+            } else if (
+               currentTurn &&
+               currentTurn.playerId === battle.playerOne.playerId &&
+               currentTurn.unitJoinNumber !== attakerJoinNumber
+            ) {
+               return {
+                  errorMessage:
+                     `Cannot attack, player unit ${attakerJoinNumber} is not on turn. Unit on turn is ${currentTurn.unitJoinNumber}`,
+               }
             }
          }
 
@@ -221,17 +267,69 @@ export class PlayerAgainstAIGame {
             )
          }
 
-         if (battle.playerTwo.counterAttackFunction) {
-            battle.playerTwo.counterAttackFunction(battle)
-         }
+         battle.battleActions.push({
+            attackingUnit: {
+               defaultStatus: attackerUnit.defaultStatus,
+               inBattleStatus: attackerUnit.inBattleStatus,
+               joinNumber: attackerUnit.joinNumber,
+               name: attackerUnit.name,
+               playerId: battle.playerOne.playerId,
+            },
+            defendingUnit: {
+               defaultStatus: defenderUnit.defaultStatus,
+               inBattleStatus: defenderUnit.inBattleStatus,
+               joinNumber: defenderUnit.joinNumber,
+               name: defenderUnit.name,
+               playerId: battle.playerTwo.playerId,
+            },
+         })
 
          const winner = this.determineWinner(
             battle.playerOne,
             battle.playerTwo,
          )
+
          if (winner) {
             battle.battleStatus = BattleStatus.ENDED
             battle.battleWinner = winner
+         } else {
+            if (turnBar) {
+               for (
+                  let nextTurn = turnBar.nextTurn();
+                  nextTurn !== undefined;
+                  nextTurn = turnBar.nextTurn()
+               ) {
+                  if (nextTurn.playerId === battle.playerOne.playerId) {
+                     break
+                  } else {
+                     if (battle.playerTwo.counterAttackFunction) {
+                        battle.playerTwo.counterAttackFunction(battle)
+                     }
+
+                     const winner = this.determineWinner(
+                        battle.playerOne,
+                        battle.playerTwo,
+                     )
+                     if (winner) {
+                        battle.battleStatus = BattleStatus.ENDED
+                        battle.battleWinner = winner
+                     }
+                  }
+               }
+            } else {
+               if (battle.playerTwo.counterAttackFunction) {
+                  battle.playerTwo.counterAttackFunction(battle)
+               }
+
+               const winner = this.determineWinner(
+                  battle.playerOne,
+                  battle.playerTwo,
+               )
+               if (winner) {
+                  battle.battleStatus = BattleStatus.ENDED
+                  battle.battleWinner = winner
+               }
+            }
          }
       }
       return battle

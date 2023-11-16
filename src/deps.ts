@@ -6,4 +6,4 @@ export {
 
 export { fail } from 'https://deno.land/std@0.202.0/assert/fail.ts'
 
-export * from 'https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v0.3.0/src/index.ts'
+export * from 'https://raw.githubusercontent.com/sgohlke/rpg-ts-base/v0.4.0/src/index.ts'

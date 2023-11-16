@@ -30,11 +30,13 @@ export class PlayerInBattle extends GamePlayer {
                hp: unit.defaultStatus.hp,
                atk: unit.defaultStatus.atk,
                def: unit.defaultStatus.def,
+               spd: unit.defaultStatus.spd,
             },
             inBattleStatus: {
                hp: unit.defaultStatus.hp,
                atk: unit.defaultStatus.atk,
                def: unit.defaultStatus.def,
+               spd: unit.defaultStatus.spd,
             },
          })
       }

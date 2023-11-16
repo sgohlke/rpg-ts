@@ -31,12 +31,14 @@ Deno.test('Battle is correctly created', () => {
 
    const battle: Battle = {
       battleId: 'p1-p2-1111',
+      battleActions: [],
       playerOne,
       playerTwo,
       battleStatus: BattleStatus.ACTIVE,
    }
 
    assertEquals(battle.battleId, 'p1-p2-1111')
+   assertEquals(battle.battleActions, [])
    assertEquals(battle.playerOne, playerOne)
    assertEquals(battle.playerTwo, playerTwo)
    assertEquals(battle.battleStatus, BattleStatus.ACTIVE)
