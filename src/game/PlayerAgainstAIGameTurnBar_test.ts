@@ -1,3 +1,4 @@
+import { PlayerUnit } from '../battle/PlayerUnit.ts'
 import { assert, assertEquals, fail } from '../deps.ts'
 
 import {
@@ -12,6 +13,7 @@ import {
    randomCounterAttackFunction,
    shortBattleAction,
    SPDTurnBar,
+   TurnBar,
 } from '../index.ts'
 
 const slimeUnit = getDefaultUnit('1')
@@ -41,6 +43,7 @@ Deno.test('Battle is correctly created and added to Battle list', async () => {
       game,
       playerOne,
       playerTwo,
+      randomCounterAttackFunction,
    )
    assert(battle)
    if (typeof battleId === 'string' && 'battleId' in battle) {
@@ -114,6 +117,7 @@ Deno.test('Attack in battle is performed correctly', async () => {
       game,
       playerOne,
       playerTwo,
+      randomCounterAttackFunction,
    )
 
    assert(battle)
@@ -176,6 +180,7 @@ Deno.test('Attack in battle is performed correctly and deals at least 1 HP as da
       game,
       playerOne,
       playerTwo,
+      randomCounterAttackFunction,
    )
    assert(battle)
    if (typeof battleId === 'string' && 'battleId' in battle) {
@@ -231,6 +236,7 @@ Deno.test('Battle has ended and proper winner is determined if Player defeats AI
       game,
       playerOne,
       playerTwo,
+      randomCounterAttackFunction,
    )
    assert(battleId)
    if (typeof battleId === 'string') {
@@ -334,6 +340,7 @@ Deno.test('Player cannot attack unit with 0 HP', async () => {
       game,
       playerOne,
       playerTwo,
+      randomCounterAttackFunction,
    )
 
    if (typeof battleId === 'string') {
@@ -428,6 +435,7 @@ Deno.test('Player looses battle against AI', async () => {
       game,
       playerOne,
       playerTwo,
+      randomCounterAttackFunction,
    )
 
    if (typeof battleId === 'string') {
@@ -439,6 +447,107 @@ Deno.test('Player looses battle against AI', async () => {
          assertEquals(
             battle.battleWinner,
             battle.playerTwo,
+         )
+      } else {
+         fail('Expected Battle but got ErrorMessage' + JSON.stringify(battle))
+      }
+   } else {
+      fail('Should not reach this!')
+   }
+})
+
+Deno.test('Player looses battle against AI on battle start', async () => {
+   const playerDataStore = new InMemoryPlayerDataStore()
+   // Given
+   const game = new PlayerAgainstAIGame(playerDataStore)
+   const playerOne: GamePlayer = new GamePlayer({
+      playerId: 'p1',
+      name: 'Test Player',
+   })
+   playerOne.addUnit(punchbagUnit)
+
+   const playerTwo: GamePlayer = new GamePlayer({
+      playerId: 'p2',
+      name: 'AI Player',
+   })
+   playerTwo.addUnit(slimeUnit)
+
+   const { battleId } = await createBattle(
+      playerDataStore,
+      game,
+      playerOne,
+      playerTwo,
+      randomCounterAttackFunction,
+   )
+
+   if (typeof battleId === 'string') {
+      const battle = await game.getBattle(battleId)
+      assert(battle)
+      if ('battleId' in battle) {
+         assertEquals(battle.playerOne.isDefeated(), true)
+         assertEquals(battle.battleStatus, BattleStatus.ENDED)
+         assertEquals(
+            battle.battleWinner,
+            battle.playerTwo,
+         )
+      } else {
+         fail('Should not reach this!')
+      }
+   } else {
+      fail('Should not reach this!')
+   }
+})
+
+Deno.test('PlayerOne can battle even if PlayerTwo is faster', async () => {
+   const playerDataStore = new InMemoryPlayerDataStore()
+   // Given
+   const game = new PlayerAgainstAIGame(playerDataStore)
+   const playerOne: GamePlayer = new GamePlayer({
+      playerId: 'p1',
+      name: 'Test Player',
+   })
+   playerOne.addUnit({
+      name: 'CounterAttacker',
+      defaultStatus: { hp: 5, atk: 3, def: 1, spd: 1 },
+   })
+
+   const playerTwo: GamePlayer = new GamePlayer({
+      playerId: 'p2',
+      name: 'AI Player',
+   })
+   playerTwo.addUnit({
+      name: 'GlassCannon',
+      defaultStatus: { hp: 1, atk: 3, def: 1, spd: 5 },
+   })
+
+   const { battleId } = await createBattle(
+      playerDataStore,
+      game,
+      playerOne,
+      playerTwo,
+      randomCounterAttackFunction,
+   )
+
+   assert(battleId)
+   if (typeof battleId === 'string') {
+      const battle = await game.attack(battleId, 1, 1)
+      assert(battle)
+      if ('battleId' in battle) {
+         // Test battle actions
+         const shortBattleActions = battle.battleActions.map(
+            shortBattleAction,
+         )
+         assertEquals(shortBattleActions, [
+            'p2_1-p1_1',
+            'p1_1-p2_1',
+         ])
+
+         // Test playerTwo is defeated and playerOne won
+         assertEquals(battle.playerTwo.isDefeated(), true)
+         assertEquals(battle.battleStatus, BattleStatus.ENDED)
+         assertEquals(
+            battle.battleWinner,
+            battle.playerOne,
          )
       } else {
          fail('Expected Battle but got ErrorMessage' + JSON.stringify(battle))
@@ -469,6 +578,7 @@ Deno.test('Cannot attack in battle that has already ended', async () => {
       game,
       playerOne,
       playerTwo,
+      randomCounterAttackFunction,
    )
 
    assert(battleId)
@@ -522,6 +632,7 @@ Deno.test('Cannot attack if attacker or defender unit is not found', async () =>
       game,
       playerOne,
       playerTwo,
+      randomCounterAttackFunction,
    )
    assert(battleId)
    if (typeof battleId === 'string') {
@@ -806,14 +917,27 @@ Deno.test('Player cannot attack enemy if enemy is on turn', async () => {
    })
    playerTwo.addUnit(parentSlimeUnit)
 
+   class CustomTurnbar extends SPDTurnBar {
+      setCurrentTurn(playerUnit: PlayerUnit) {
+         this.currentTurn = playerUnit
+      }
+   }
+   const customTurnBar = new CustomTurnbar()
    const { battleId } = await createBattle(
       playerDataStore,
       game,
       playerOne,
       playerTwo,
-      noCounterAttackFunction,
+      randomCounterAttackFunction,
+      customTurnBar,
    )
    assert(battleId)
+
+   customTurnBar.setCurrentTurn({
+      playerId: 'p2',
+      unitJoinNumber: 1,
+   })
+
    if (typeof battleId === 'string') {
       const battle = await game.attack(battleId, 1, 1)
       assert(battle)
@@ -823,7 +947,10 @@ Deno.test('Player cannot attack enemy if enemy is on turn', async () => {
             'Cannot attack, player p1 is not on turn. Player on turn is p2',
          )
       } else {
-         fail('Expected Battle but got ErrorMessage')
+         fail(
+            'Expected ErrorMessage but got Battle ' +
+               JSON.stringify(battle.battleActions.map(shortBattleAction)),
+         )
       }
    } else {
       fail('Should not reach this!')
@@ -876,7 +1003,8 @@ async function createBattle(
    game: PlayerAgainstAIGame,
    playerOne: GamePlayer,
    playerTwo: GamePlayer,
-   playerTwoCounterAttackStrategy = randomCounterAttackFunction,
+   playerTwoCounterAttackStrategy?: (battle: Battle) => void,
+   customTurnbar?: TurnBar,
 ): Promise<
    {
       battleId: string | GeneralError
@@ -912,7 +1040,7 @@ async function createBattle(
             playerOneId: newPlayerOnePlayerId,
             playerTwoId: newPlayerTwoPlayerId,
             playerTwoCounterAttackFunction: playerTwoCounterAttackStrategy,
-            turnBar: new SPDTurnBar(),
+            turnBar: customTurnbar ?? new SPDTurnBar(),
          })
          assert(battleId)
          if (typeof battleId === 'string') {

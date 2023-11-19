@@ -11,6 +11,7 @@ import {
    PlayerDataStore,
    PlayerInBattle,
    randomCounterAttackFunction,
+   TurnBar,
    verifyPassword,
 } from '../index.ts'
 
@@ -147,10 +148,9 @@ export class PlayerAgainstAIGame {
 
          if (turnBar) {
             turnBar.initTurnBar(playerOneInBattle, playerTwoInBattle)
-            //TODO: Check if AI player is on turn and perform actions
          }
 
-         this.battles.push({
+         const battle: Battle = {
             battleId,
             battleActions: [],
             playerOne: playerOneInBattle,
@@ -158,7 +158,17 @@ export class PlayerAgainstAIGame {
             battleStatus: BattleStatus.ACTIVE,
             isTutorialBattle: isTutorialBattle,
             turnBar: turnBar,
-         })
+         }
+
+         // Check if AI player is on turn and perform actions
+         if (
+            turnBar && turnBar.currentTurn &&
+            turnBar.currentTurn.playerId === playerTwoId
+         ) {
+            this.performAICounterAttacks(battle, turnBar)
+         }
+
+         this.battles.push(battle)
          return battleId
       } else {
          return undefined
@@ -294,28 +304,7 @@ export class PlayerAgainstAIGame {
             battle.battleWinner = winner
          } else {
             if (turnBar) {
-               for (
-                  let nextTurn = turnBar.nextTurn();
-                  nextTurn !== undefined;
-                  nextTurn = turnBar.nextTurn()
-               ) {
-                  if (nextTurn.playerId === battle.playerOne.playerId) {
-                     break
-                  } else {
-                     if (battle.playerTwo.counterAttackFunction) {
-                        battle.playerTwo.counterAttackFunction(battle)
-                     }
-
-                     const winner = this.determineWinner(
-                        battle.playerOne,
-                        battle.playerTwo,
-                     )
-                     if (winner) {
-                        battle.battleStatus = BattleStatus.ENDED
-                        battle.battleWinner = winner
-                     }
-                  }
-               }
+               this.performAICounterAttacks(battle, turnBar)
             } else {
                if (battle.playerTwo.counterAttackFunction) {
                   battle.playerTwo.counterAttackFunction(battle)
@@ -333,6 +322,51 @@ export class PlayerAgainstAIGame {
          }
       }
       return battle
+   }
+
+   public performAICounterAttacks(battle: Battle, turnBar: TurnBar): void {
+      // Counter attack if player two is on current turn
+      if (
+         turnBar.currentTurn &&
+         turnBar.currentTurn.playerId === battle.playerTwo.playerId
+      ) {
+         if (battle.playerTwo.counterAttackFunction) {
+            battle.playerTwo.counterAttackFunction(battle)
+         }
+
+         const winner = this.determineWinner(
+            battle.playerOne,
+            battle.playerTwo,
+         )
+         if (winner) {
+            battle.battleStatus = BattleStatus.ENDED
+            battle.battleWinner = winner
+         }
+      }
+
+      // Counter attack if player two is on next turn
+      for (
+         let nextTurn = turnBar.nextTurn();
+         nextTurn !== undefined;
+         nextTurn = turnBar.nextTurn()
+      ) {
+         if (nextTurn.playerId === battle.playerOne.playerId) {
+            break
+         } else {
+            if (battle.playerTwo.counterAttackFunction) {
+               battle.playerTwo.counterAttackFunction(battle)
+            }
+
+            const winner = this.determineWinner(
+               battle.playerOne,
+               battle.playerTwo,
+            )
+            if (winner) {
+               battle.battleStatus = BattleStatus.ENDED
+               battle.battleWinner = winner
+            }
+         }
+      }
    }
 
    private determineWinner(
