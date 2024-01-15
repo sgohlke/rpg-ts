@@ -5,7 +5,6 @@ export * from './battle/BattleStatus.ts'
 export * from './battle/PlayerUnit.ts'
 export * from './battle/SPDTurnBar.ts'
 export * from './battle/TurnBar.ts'
-export * from './crypto/CryptoHelper.ts'
 export * from './error/GeneralError.ts'
 export * from './game/PlayerAgainstAIGame.ts'
 export * from './player/CounterAttackFunction.ts'
@@ -16,6 +15,11 @@ export * from './player/PlayerInBattle.ts'
 export * from './unit/InBattleStatus.ts'
 export * from './unit/UnitInBattle.ts'
 export * from './unit/db/DefaultUnits.ts'
+export {
+   createPasswordHash,
+   generateAccessTokenHash,
+   verifyPassword,
+} from './deps.ts'
 export type {
    Player,
    PlayerAccount,
