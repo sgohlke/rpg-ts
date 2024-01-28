@@ -282,7 +282,6 @@ Deno.test('Battle has ended and proper winner is determined if Player defeats AI
          assertEquals(shortBattleActions, [
             'p1_1-p2_2',
             'p2_1-p1_1',
-            'p2_2-p1_1',
             'p1_1-p2_1',
             'p2_1-p1_1',
             'p1_1-p2_1',

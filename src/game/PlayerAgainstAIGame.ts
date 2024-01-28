@@ -324,13 +324,17 @@ export class PlayerAgainstAIGame {
       return battle
    }
 
+   // TODO: Check if turnBar can be read from given Battle and removed as parameter
    public performAICounterAttacks(battle: Battle, turnBar: TurnBar): void {
       // Counter attack if player two is on current turn
       if (
          turnBar.currentTurn &&
          turnBar.currentTurn.playerId === battle.playerTwo.playerId
       ) {
-         if (battle.playerTwo.counterAttackFunction) {
+         if (
+            battle.playerTwo.counterAttackFunction &&
+            canPerformCounterAttack(battle)
+         ) {
             battle.playerTwo.counterAttackFunction(battle)
          }
 
@@ -353,7 +357,10 @@ export class PlayerAgainstAIGame {
          if (nextTurn.playerId === battle.playerOne.playerId) {
             break
          } else {
-            if (battle.playerTwo.counterAttackFunction) {
+            if (
+               battle.playerTwo.counterAttackFunction &&
+               canPerformCounterAttack(battle)
+            ) {
                battle.playerTwo.counterAttackFunction(battle)
             }
 
@@ -404,4 +411,18 @@ export class PlayerAgainstAIGame {
       }
       return knownAccessTokenForPlayer === providedAccessToken
    }
+}
+
+// TODO: Quickfix. Maybe implement updating TurnBar and removing 0 hp units from TurnBar
+function canPerformCounterAttack(battle: Battle): boolean {
+   // Check if counter attacker has at least one HP
+   if (battle.turnBar && battle.turnBar.currentTurn) {
+      const counterAttacker = battle.playerTwo.getUnitInBattle(
+         battle.turnBar.currentTurn.unitJoinNumber,
+      )
+      return counterAttacker !== undefined &&
+         counterAttacker.inBattleStatus.hp > 0
+   }
+   // TODO: Untested.
+   return true
 }
