@@ -935,6 +935,11 @@ Deno.test('Player cannot attack enemy if enemy is on turn', async () => {
    customTurnBar.setCurrentTurn({
       playerId: 'p2',
       unitJoinNumber: 1,
+      unit: {
+         inBattleStatus: parentSlimeUnit.defaultStatus,
+         name: '',
+         defaultStatus: parentSlimeUnit.defaultStatus,
+      },
    })
 
    if (typeof battleId === 'string') {

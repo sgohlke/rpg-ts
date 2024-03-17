@@ -62,6 +62,7 @@ export class SPDTurnBar implements TurnBar {
          this.turns = sortedPlayerUnits.map<PlayerUnit>((entry) =>
             <PlayerUnit> {
                playerId: entry.playerId,
+               unit: entry.unitInBattle,
                unitJoinNumber: entry.unitInBattle.joinNumber,
             }
          )
@@ -74,10 +75,17 @@ export class SPDTurnBar implements TurnBar {
    }
 
    nextTurn(): PlayerUnit | undefined {
+      this.removeDefeatedUnits()
       this.currentTurn = this.turns.shift()
       if (this.turns.length === 0) {
          this.initTurns()
       }
       return this.currentTurn
+   }
+
+   removeDefeatedUnits() {
+      this.turns = this.turns.filter((playerUnit) =>
+         playerUnit.unit.inBattleStatus.hp > 0
+      )
    }
 }
