@@ -1,4 +1,4 @@
-import { assertEquals } from '../deps.ts'
+import { assertEquals } from '../dev_deps.ts'
 import { PlayerInBattle, SPDTurnBar } from '../index.ts'
 
 Deno.test('SPDTurnBar is correctly created for units with undefined SPD', () => {

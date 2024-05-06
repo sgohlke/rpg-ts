@@ -1,5 +1,5 @@
 import { PlayerUnit } from '../battle/PlayerUnit.ts'
-import { assert, assertEquals, fail } from '../deps.ts'
+import { assert, assertEquals, fail } from '../dev_deps.ts'
 
 import {
    Battle,
